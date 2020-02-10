@@ -11,6 +11,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // $this->call(UsersTableSeeder::class);
+        $path = 'database/countries.sql';
+        DB::unprepared(file_get_contents($path));
+
+        $path = 'database/cities.sql';
+        DB::unprepared(file_get_contents($path));
+
+        $path = 'database/clubs.sql';
+        DB::unprepared(file_get_contents($path));
+
+        $path = 'database/stadiums.sql';
+        DB::unprepared(file_get_contents($path));
     }
 }
