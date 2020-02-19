@@ -17,10 +17,8 @@ use Illuminate\Http\Request;
     return $request->user();
 });*/
 
-Route::group(['prefix' => 'game', 'as' => 'game.'], function () {
-    Route::get('/', function () {
-
-    });
+Route::group(['prefix' => 'games', 'as' => 'game.'], function () {
+    Route::get('/', 'Game\GameController@index');
 
     Route::post('/store', 'Game\GameController@store')->name('store');
 });

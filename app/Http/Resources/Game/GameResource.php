@@ -19,6 +19,8 @@ class GameResource extends JsonResource
             'created_at' => (string) $this->created_at,
             'updated_at' => (string) $this->updated_at,
             'user_id' => $this->user_id,
+            'club_id' => $this->club_id,
+            'competition_id' => $this->competition_id,
         ];
     }
 }
