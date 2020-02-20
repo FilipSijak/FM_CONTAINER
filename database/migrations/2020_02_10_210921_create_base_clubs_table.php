@@ -22,6 +22,7 @@ class CreateBaseClubsTable extends Migration
             $table->integer('rank');
             $table->integer('rank_academy');
             $table->integer('rank_training');
+            $table->integer('competition_id');
         });
     }
 

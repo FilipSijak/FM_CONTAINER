@@ -4,8 +4,8 @@ namespace App\Models\Game;
 
 use Illuminate\Database\Eloquent\Model;
 
-class BaseClubs extends Model
+class BaseCities extends Model
 {
-    protected $table = 'base_clubs';
+    protected $table = 'base_cities';
     public $timestamps = false;
 }

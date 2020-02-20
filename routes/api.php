@@ -20,5 +20,8 @@ use Illuminate\Http\Request;
 Route::group(['prefix' => 'games', 'as' => 'game.'], function () {
     Route::get('/', 'Game\GameController@index');
 
+    Route::get('/countries/competitions', 'Game\GameController@getCountriesAndCompetitions');
+    Route::get('/competitions/clubs', 'Game\GameController@getClubsByCompetition');
+
     Route::post('/store', 'Game\GameController@store')->name('store');
 });
