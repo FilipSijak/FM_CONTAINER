@@ -6,7 +6,7 @@ namespace Services\PlayerService\PlayerConfig;
  * Highest valued attributes for each position
 */
 
-class PlayerPositionConfig
+class PlayerPosition
 {
     const POSITION_TECH_ATTRIBUTES = [
         'forward' => [

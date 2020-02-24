@@ -5,7 +5,7 @@ namespace Services\PlayerService\PlayerConfig;
 /*
  * Player technical attributes
 */
-class PlayerTechAttrsConfig
+class PlayerTechAttributes
 {
     const PRIMARY_TECH_ATTRIBUTES = [
         'forward' => array('finishing', 'dribbling', 'firstTouch'),
