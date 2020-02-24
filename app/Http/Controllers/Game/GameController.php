@@ -31,10 +31,20 @@ class GameController extends Controller
     }
 
     /*
-     * @params - country, competition, club
+     * @params - user, manager, competition, club
     */
     public function gameInit(GameInitRequest $request)
     {
+        $game = new Game();
+
+        $game->user_id = $request->get('user_id');
+        $game->competition_id = $request->get('competition_id');
+        $game->club_id = $request->get('club_id');
+        $game->manager_id = $request->get('manager_id');
+
+        $game->save();
+
+
         // create game and get game id
         // map base tables with game tables (countries, cities, clubs, competitions, stadiums)
         // create all players for game_id
