@@ -16,6 +16,7 @@ use App\Position;*/
 /*
  * Creation of a new player (regen)
 */
+
 class PlayerCreate
 {
     public function setupPlayer($coeff)
@@ -23,18 +24,18 @@ class PlayerCreate
         $player = [];
 
         // player potential
-        $playerPotential = (array) $this->setPlayerPotential($coeff);
+        $playerPotential            = (array)$this->setPlayerPotential($coeff);
         $player['player_potential'] = $playerPotential;
 
         // player position
         $playerPosition = $this->setPlayerPosition();
 
         // player attributes
-        $initialAttributeValues = $this->setPlayerInitialAttributes($playerPotential, $playerPosition);
+        $initialAttributeValues      = $this->setPlayerInitialAttributes($playerPotential, $playerPosition);
         $player['player_attributes'] = $initialAttributeValues;
 
         // player other positions based on attributes
-        $playerPositionList = $this->setPlayerPositionList($initialAttributeValues);
+        $playerPositionList             = $this->setPlayerPositionList($initialAttributeValues);
         $player['player_position_list'] = $playerPositionList;
         // set player info
         /*$playerInfo = $this->setPlayerInfo();
@@ -42,10 +43,10 @@ class PlayerCreate
 
 
         $player['player_info'] = [
-            'first_name' => 'Filip',
-            'last_name' => 'Sijak',
+            'first_name'   => 'Filip',
+            'last_name'    => 'Sijak',
             'country_code' => 'GBR',
-            'dob' => date("Ymd")
+            'dob'          => date("Ymd"),
         ];
 
         return $this->setPlayerInstance($player);

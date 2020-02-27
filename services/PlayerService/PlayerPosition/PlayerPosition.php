@@ -23,7 +23,7 @@ class PlayerPosition
 
     private static function getMainAttributesForPosition(): array
     {
-        $positionList = PositionConfig::PLAYER_POSITIONS;
+        $positionList               = PositionConfig::PLAYER_POSITIONS;
         $positionListMainAttributes = [];
 
         foreach ($positionList as $position) {
@@ -49,7 +49,7 @@ class PlayerPosition
 
         foreach ($positionsWithMainAttributes as $position => $positionAttributes) {
             $averageGradeForPosition[$position] = 0;
-            $count = 0;
+            $count                              = 0;
 
             foreach ($positionAttributes as $attribute) {
                 $count++;

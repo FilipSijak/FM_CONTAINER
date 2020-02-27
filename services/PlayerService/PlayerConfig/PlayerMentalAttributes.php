@@ -9,20 +9,20 @@ namespace Services\PlayerService\PlayerConfig;
 class PlayerMentalAttributes
 {
     const PRIMARY_MENTAL_ATTRIBUTES = [
-        'forward' => array('anticipation', 'flair', 'composure'),
-        'defending_middfielder' => array('workRate', 'determination'),
-        'creative_middfielder' => array('creativity'),
-        'center_back' => array('positioning', 'decisions'),
-        'wing_back' => array('of_the_ball', 'workRate'),
-        'winger' => array('of_the_ball')
+        'forward'               => ['anticipation', 'flair', 'composure'],
+        'defending_middfielder' => ['workRate', 'determination'],
+        'creative_middfielder'  => ['creativity'],
+        'center_back'           => ['positioning', 'decisions'],
+        'wing_back'             => ['of_the_ball', 'workRate'],
+        'winger'                => ['of_the_ball'],
     ];
 
     const SECONDARY_MENTAL_ATTRIBUTES = [
-        'forward' => array('of_the_ball'),
-        'defending_middfielder' => array('teamWork', 'positioning'),
-        'creative_middfielder' => array('flair', 'of_the_ball'),
-        'center_back' => array('composure', 'concentration', 'anticipation'),
-        'wing_back' => array('positioning'),
-        'winger' => array('flair', 'workRate')
+        'forward'               => ['of_the_ball'],
+        'defending_middfielder' => ['teamWork', 'positioning'],
+        'creative_middfielder'  => ['flair', 'of_the_ball'],
+        'center_back'           => ['composure', 'concentration', 'anticipation'],
+        'wing_back'             => ['positioning'],
+        'winger'                => ['flair', 'workRate'],
     ];
 }

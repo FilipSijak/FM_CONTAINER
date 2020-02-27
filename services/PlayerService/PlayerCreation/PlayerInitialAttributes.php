@@ -11,13 +11,12 @@ class PlayerInitialAttributes
     protected $player_potential;
     protected $player_all_attributes = [];
     protected $player_position;
-    protected $player_main_attrs;
-    protected $commonAttributes = ['stamina', 'acceleration', 'strength'];
+    protected $commonAttributes      = ['stamina', 'acceleration', 'strength'];
 
     public function __construct($player_potential, $player_position)
     {
         $this->player_potential = $player_potential;
-        $this->player_position = $player_position;
+        $this->player_position  = $player_position;
     }
 
     // player physical - i could add attribute in his fitness, it would be rating for physique
@@ -44,7 +43,7 @@ class PlayerInitialAttributes
     protected function setMainAttributes()
     {
         $attributeCategories = ['technical', 'mental', 'physical'];
-        $mainAttributes = PlayerPosition::getPositionMainAttributes($this->player_position);
+        $mainAttributes      = PlayerPosition::getPositionMainAttributes($this->player_position);
 
         foreach ($mainAttributes as $attributesCategory => $importanceList) {
             $this->setPrimaryAttributes($importanceList['primary'], $attributesCategory);
@@ -56,7 +55,7 @@ class PlayerInitialAttributes
     protected function setPrimaryAttributes($attributes, $attributesCategory)
     {
         foreach ($attributes as $attribute) {
-            $this->player_all_attributes[$attribute] = (int) round(
+            $this->player_all_attributes[$attribute] = (int)round(
                 rand($this->player_potential[$attributesCategory] - 15, $this->player_potential[$attributesCategory]) / 10
             );
         }
@@ -68,7 +67,7 @@ class PlayerInitialAttributes
     protected function setSecondaryAttributes($attributes, $attributesCategory)
     {
         foreach ($attributes as $attribute) {
-            $this->player_all_attributes[$attribute] = (int) round(
+            $this->player_all_attributes[$attribute] = (int)round(
                 rand($this->player_potential[$attributesCategory] - 40, $this->player_potential[$attributesCategory]) / 10
             );
         }
@@ -77,7 +76,7 @@ class PlayerInitialAttributes
     protected function setOtherAttributes()
     {
         $all_tehnical_fields = PlayerFields::TEHNICAL_FIELDS;
-        $all_mental_fields = PlayerFields::MENTAL_FIELDS;
+        $all_mental_fields   = PlayerFields::MENTAL_FIELDS;
         $all_physical_fields = PlayerFields::PHYSICAL_FILDS;
 
         $attributeCategories = ['technical', 'mental', 'physical'];
@@ -85,7 +84,7 @@ class PlayerInitialAttributes
         $all_abillity_attributes = array_merge($all_tehnical_fields, $all_mental_fields, $all_physical_fields);
 
         foreach ($all_abillity_attributes as $field) {
-            foreach($attributeCategories as $category) {
+            foreach ($attributeCategories as $category) {
                 if (!isset($this->player_all_attributes[$field])) {
 
                     $minimumAttributeValue = self::setMinimumAttributeValue($this->player_potential[$category]);
@@ -108,13 +107,13 @@ class PlayerInitialAttributes
         $potentialDescription = PlayerPotential::playerPotentialLabel($coef);
 
         $potentialMinimumAttributesRanges = [
-            'amateur' => 3,
-            'low' => 4,
+            'amateur'      => 3,
+            'low'          => 4,
             'professional' => 5,
-            'normal' => 6,
-            'high' => 7,
-            'very_high' => 8,
-            'world_class' => 9,
+            'normal'       => 6,
+            'high'         => 7,
+            'very_high'    => 8,
+            'world_class'  => 9,
         ];
 
         return $potentialMinimumAttributesRanges[$potentialDescription];

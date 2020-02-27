@@ -36,10 +36,10 @@ class GameController extends Controller
     {
         $game = new Game();
 
-        $game->user_id = $request->get('user_id');
+        $game->user_id        = $request->get('user_id');
         $game->competition_id = $request->get('competition_id');
-        $game->club_id = $request->get('club_id');
-        $game->manager_id = $request->get('manager_id');
+        $game->club_id        = $request->get('club_id');
+        $game->manager_id     = $request->get('manager_id');
 
         $game->save();
 
@@ -58,7 +58,7 @@ class GameController extends Controller
         $clubs = BaseClubs::all();
         $clubs->forget('game_id');
         $mappedCollections = [
-            'clubs' => ClubResource::collection($clubs)
+            'clubs' => ClubResource::collection($clubs),
         ];
 
         return response()->json($mappedCollections);
@@ -87,14 +87,14 @@ class GameController extends Controller
 
     public function store(GameCreateRequest $request)
     {
-        $now = Carbon::now()->timestamp;
+        $now  = Carbon::now()->timestamp;
         $game = new Game();
 
-        $game->created_at = $now;
-        $game->updated_at = $now;
-        $game->game_version = null;
-        $game->user_id = $request->post('user_id');
-        $game->club_id = $request->post('club_id');
+        $game->created_at     = $now;
+        $game->updated_at     = $now;
+        $game->game_version   = null;
+        $game->user_id        = $request->post('user_id');
+        $game->club_id        = $request->post('club_id');
         $game->competition_id = $request->post('competition_id');
 
         $game->save();
