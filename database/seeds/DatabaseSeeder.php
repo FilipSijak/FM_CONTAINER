@@ -25,5 +25,8 @@ class DatabaseSeeder extends Seeder
 
         $path = 'database/competitions.sql';
         DB::unprepared(file_get_contents($path));
+
+        $path = 'database/positions.sql';
+        DB::unprepared(file_get_contents($path));
     }
 }

@@ -37,7 +37,7 @@ class CreatePlayersTable extends Migration
             $table->integer('game_id');
             $table->string('first_name', 30);
             $table->string('last_name', 30);
-            $table->integer('country_id')->nullable();
+            $table->string('country_code');
             $table->date('dob')->nullable();
             $table->integer('technical')->nullable();
             $table->integer('mental')->nullable();

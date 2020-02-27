@@ -16,7 +16,7 @@ class CreateGamesTable extends Migration
         Schema::create('games', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('user_id');
-            $table->integer('manager_id');
+            $table->integer('manager_id')->nullable();
             $table->integer('club_id');
             $table->integer('competition_id');
             $table->date('game_date')->nullable();

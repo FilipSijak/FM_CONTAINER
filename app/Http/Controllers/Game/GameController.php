@@ -12,7 +12,6 @@ use App\Models\Game\BaseClubs;
 use App\Models\Game\BaseCompetitions;
 use App\Models\Game\BaseCountries;
 use Carbon\Carbon;
-use http\Env\Response;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -98,7 +97,8 @@ class GameController extends Controller
         $game->club_id = $request->post('club_id');
         $game->competition_id = $request->post('competition_id');
 
-        //$game->save();
+        $game->save();
+
         return new GameResource($game);
     }
 }

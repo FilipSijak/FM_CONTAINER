@@ -25,3 +25,6 @@ Route::group(['prefix' => 'games', 'as' => 'game.'], function () {
 
     Route::post('/store', 'Game\GameController@store')->name('store');
 });
+
+
+Route::get('/test', 'TestController@index');
