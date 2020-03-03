@@ -4,14 +4,10 @@ namespace Services\PlayerService\PlayerCreation;
 
 use App\Models\Player\Player;
 use App\Models\Player\Position;
-use Illuminate\Support\Facades\Date;
 use Services\PlayerService\PlayerPosition\PlayerPosition;
 use Services\PlayerService\PlayerPotential\PlayerPotential;
 use Services\PlayerService\PlayerCreation\PlayerInitialAttributes;
-
-/*use App\Repositories\PlayerRepository;
-use App\Player;
-use App\Position;*/
+use Faker\Factory;
 
 /*
  * Creation of a new player (regen)
@@ -35,19 +31,13 @@ class PlayerCreate
         $player['player_attributes'] = $initialAttributeValues;
 
         // player other positions based on attributes
-        $playerPositionList             = $this->setPlayerPositionList($initialAttributeValues);
+        $playerPositionList = $this->setPlayerPositionList($initialAttributeValues);
+
         $player['player_position_list'] = $playerPositionList;
         // set player info
-        /*$playerInfo = $this->setPlayerInfo();
-        $player['player_info'] = $playerInfo;*/
+        $playerInfo = $this->setPlayerInfo();
 
-
-        $player['player_info'] = [
-            'first_name'   => 'Filip',
-            'last_name'    => 'Sijak',
-            'country_code' => 'GBR',
-            'dob'          => date("Ymd"),
-        ];
+        $player['player_info'] = $playerInfo;
 
         return $this->setPlayerInstance($player);
     }
@@ -68,15 +58,19 @@ class PlayerCreate
 
             $player->{$item} = $fields;
         }
-        $player->game_id = 1;
-        //$player->save();
+
+        $player->game_id      = 1;
+        $player->first_name   = $playerCreationData['player_info']['first_name'];
+        $player->last_name    = $playerCreationData['player_info']['last_name'];
+        $player->country_code = $playerCreationData['player_info']['country_code'];
+        $player->dob          = $playerCreationData['player_info']['dob'];
+        $player->save();
 
         $positions = Position::all();
-        dd($playerCreationData['player_position_list']);
+
         foreach ($positions as $position) {
-            $grade = $playerCreationData['player_position_list'][$position->name];
+            $grade = $playerCreationData['player_position_list'][$position->alias];
             $grade = ceil($grade);
-            dd($grade);
             $player->positions()->attach($position, ['position_grade' => $grade, 'game_id' => 1]);
         }
 
@@ -114,7 +108,15 @@ class PlayerCreate
 
     private function setPlayerInfo()
     {
-        $pr = new PlayerRepository();
-        return $pr->setPlayerInitialInfo();
+        $faker = Factory::create();
+        $dob   = $faker->dateTimeBetween($startDate = '-40 years', $endDate = '-16 years', $timezone = null);
+        $dob   = date_format($dob, 'Y-m-d');
+
+        return [
+            'first_name'   => $faker->firstNameMale,
+            'last_name'    => $faker->lastName,
+            'country_code' => 'GBR',
+            'dob'          => $dob,
+        ];
     }
 }

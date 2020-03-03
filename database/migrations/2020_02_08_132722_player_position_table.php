@@ -13,7 +13,7 @@ class PlayerPositionTable extends Migration
      */
     public function up()
     {
-        Schema::create('player_positions', function ($table) {
+        Schema::create('player_position', function ($table) {
             $table->increments('id');
             $table->integer('game_id');
             $table->integer('player_id')->unsigned();
