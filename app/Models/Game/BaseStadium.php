@@ -9,12 +9,12 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models\Game
  */
-class BaseCities extends Model
+class BaseStadium extends Model
 {
     /**
      * @var string
      */
-    protected $table      = 'base_cities';
+    protected $table      = 'base_stadiums';
 
     /**
      * @var bool

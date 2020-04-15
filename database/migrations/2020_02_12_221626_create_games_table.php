@@ -18,7 +18,6 @@ class CreateGamesTable extends Migration
             $table->integer('user_id');
             $table->integer('manager_id')->nullable();
             $table->integer('club_id');
-            $table->integer('competition_id');
             $table->date('game_date')->nullable();
             $table->integer('game_version')->nullable();
             $table->timestamps();

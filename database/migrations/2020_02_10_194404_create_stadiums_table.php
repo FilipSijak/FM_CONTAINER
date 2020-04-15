@@ -17,7 +17,7 @@ class CreateStadiumsTable extends Migration
             $table->increments('id');
             $table->string('name');
             $table->integer('game_id');
-            $table->integer('country_code')->nullable();
+            $table->string('country_code')->nullable();
             $table->integer('city_id')->unsigned()->nullable();
             $table->integer('capacity');
         });

@@ -2,22 +2,57 @@
 
 namespace App\Http\Controllers\Game;
 
-use App\Game;
+use App\Factories\Game\GameFactory;
+use App\Models\Game\Game;
 use App\Http\Requests\Game\GameCreateRequest;
-use App\Http\Requests\Game\GameInitRequest;
 use App\Http\Resources\Club\ClubResource;
 use App\Http\Resources\Game\GameResource;
-use App\Models\Competition;
 use App\Models\Game\BaseClubs;
 use App\Models\Game\BaseCompetitions;
 use App\Models\Game\BaseCountries;
-use Carbon\Carbon;
+use App\Repositories\Interfaces\GameRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 
 class GameController extends Controller
 {
+    /**
+     * @var GameRepositoryInterface
+     */
+    protected $gameRepository;
+
+    /**
+     * @var GameInitialDataSeedInterface
+     */
+    protected $gameInitialDataSeed;
+
+    /**
+     * GameController constructor.
+     *
+     * @param GameRepositoryInterface $gameRepository
+     */
+    public function __construct(
+        GameRepositoryInterface $gameRepository,
+        GameInitialDataSeedInterface $gameInitialDataSeed
+    )
+    {
+        $this->gameRepository = $gameRepository;
+        $this->gameInitialDataSeed = $gameInitialDataSeed;
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index()
+    {
+        return response()->json($this->gameRepository->getBaseData());
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function loadGame()
     {
         $games = Game::all()->where('user_id', 1);
 
@@ -26,49 +61,11 @@ class GameController extends Controller
         }
 
         return response()->json(['data' => []]);
-        // else, go and create new game
     }
 
-    /*
-     * @params - user, manager, competition, club
-    */
-    public function gameInit(GameInitRequest $request)
-    {
-        $game = new Game();
-
-        $game->user_id        = $request->get('user_id');
-        $game->competition_id = $request->get('competition_id');
-        $game->club_id        = $request->get('club_id');
-        $game->manager_id     = $request->get('manager_id');
-
-        $game->save();
-
-
-        // create game and get game id
-        // map base tables with game tables (countries, cities, clubs, competitions, stadiums)
-        // create all players for game_id
-        // create managers
-    }
-
-    /*
-     * Provides options for selecting country, competition and club
-    */
-    public function getBaseSetup()
-    {
-        $clubs = BaseClubs::all();
-        $clubs->forget('game_id');
-        $mappedCollections = [
-            'clubs' => ClubResource::collection($clubs),
-        ];
-
-        return response()->json($mappedCollections);
-        // get countries
-        // get competitions for country
-        // get clubs for competition
-
-        //take the selected competition, club and user and create game
-    }
-
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getCountriesAndCompetitions()
     {
         $countries = BaseCountries::all();
@@ -80,25 +77,39 @@ class GameController extends Controller
         return response()->json(['data' => $countries]);
     }
 
+    /**
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
     public function getClubsByCompetition(Request $request)
     {
         return ClubResource::collection(BaseClubs::all()->where('competition_id', $request->get('competition_id')));
     }
 
+    /**
+     * @param GameCreateRequest $request
+     *
+     * @return GameResource
+     */
     public function store(GameCreateRequest $request)
     {
-        $now  = Carbon::now()->timestamp;
-        $game = new Game();
+        $gameFactory = new GameFactory($request);
 
-        $game->created_at     = $now;
-        $game->updated_at     = $now;
-        $game->game_version   = null;
-        $game->user_id        = $request->post('user_id');
-        $game->club_id        = $request->post('club_id');
-        $game->competition_id = $request->post('competition_id');
+        $game = $gameFactory->setNewGame();
 
-        $game->save();
+        if ($game instanceof Game) {
+            $this->gameInit($game);
+        }
+    }
 
-        return new GameResource($game);
+    public function gameInit(Game $game)
+    {
+        //$dataSeed = $this->gameInitialDataSeed->seedFromBaseTables($game);
+        // map base tables with game tables (countries, cities, clubs, competitions, stadiums)
+
+        // create all players for game_id
+
+        // create managers
     }
 }
