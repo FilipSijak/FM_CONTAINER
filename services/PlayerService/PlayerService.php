@@ -2,19 +2,22 @@
 
 namespace Services\PlayerService;
 
+use Services\PlayerService\Interfaces\PlayerServiceInterface;
 use Services\PlayerService\PlayerCreation\PlayerCreate;
 
-class PlayerService
+class PlayerService implements PlayerServiceInterface
 {
     protected $playerCreate;
 
     public function __construct()
     {
-        $this->playerCreate = new PlayerCreate();
+
     }
 
     public function createPlayer()
     {
-        $this->playerCreate->setupPlayer(184);
+        $this->playerCreate = new PlayerCreate(184);
+
+        return $this->playerCreate->makePlayer();
     }
 }

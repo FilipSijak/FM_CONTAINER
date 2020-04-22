@@ -89,14 +89,14 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
                 try {
                     $country = new Country();
 
-                    $country->code = $baseCountry->code;
-                    $country->name = $baseCountry->name;
-                    $country->game_id = $game->id;
-                    $country->ranking = $baseCountry->ranking;
+                    $country->code       = $baseCountry->code;
+                    $country->name       = $baseCountry->name;
+                    $country->game_id    = $game->id;
+                    $country->ranking    = $baseCountry->ranking;
                     $country->population = $baseCountry->population;
-                    $country->gdp = $baseCountry->gdp;
-                    $country->gdpcapita = $baseCountry->gdpcapita;
-                    $country->continent = $baseCountry->continent;
+                    $country->gdp        = $baseCountry->gdp;
+                    $country->gdpcapita  = $baseCountry->gdpcapita;
+                    $country->continent  = $baseCountry->continent;
 
                     $country->save();
                 } catch (\Exception $exception) {
@@ -110,11 +110,11 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
                 try {
                     $competition = new Competition();
 
-                    $competition->name = $baseCompetition->name;
+                    $competition->name         = $baseCompetition->name;
                     $competition->country_code = $baseCompetition->country_code;
-                    $competition->game_id = $game->id;
-                    $competition->rank = $baseCompetition->rank;
-                    $competition->type = $baseCompetition->type;
+                    $competition->game_id      = $game->id;
+                    $competition->rank         = $baseCompetition->rank;
+                    $competition->type         = $baseCompetition->type;
 
 
                     $competition->save();
@@ -129,13 +129,13 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
                 try {
                     $club = new Club();
 
-                    $club->name = $baseClub->name;
-                    $club->game_id = $game->id;
-                    $club->country_code = $baseClub->country_code;
-                    $club->city_id = $baseClub->city_id;
-                    $club->stadium_id = $baseClub->stadium_id;
-                    $club->rank = $baseClub->rank;
-                    $club->rank_academy = $baseClub->rank_academy;
+                    $club->name          = $baseClub->name;
+                    $club->game_id       = $game->id;
+                    $club->country_code  = $baseClub->country_code;
+                    $club->city_id       = $baseClub->city_id;
+                    $club->stadium_id    = $baseClub->stadium_id;
+                    $club->rank          = $baseClub->rank;
+                    $club->rank_academy  = $baseClub->rank_academy;
                     $club->rank_training = $baseClub->rank_training;
 
                     $club->save();
@@ -150,10 +150,10 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
                 try {
                     $city = new City();
 
-                    $city->name = $baseCity->name;
-                    $city->game_id = $game->id;
+                    $city->name         = $baseCity->name;
+                    $city->game_id      = $game->id;
                     $city->country_code = $baseCity->country_code;
-                    $city->population = $baseCity->population;
+                    $city->population   = $baseCity->population;
 
                     $city->save();
                 } catch (\Exception $exception) {

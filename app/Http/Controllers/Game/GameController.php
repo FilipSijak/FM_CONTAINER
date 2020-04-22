@@ -14,6 +14,7 @@ use App\Repositories\Interfaces\GameRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
+use Services\PlayerService\PlayerService;
 
 class GameController extends Controller
 {
@@ -28,17 +29,25 @@ class GameController extends Controller
     protected $gameInitialDataSeed;
 
     /**
+     * @var PlayerService
+     */
+    protected $playerService;
+
+    /**
      * GameController constructor.
      *
-     * @param GameRepositoryInterface $gameRepository
+     * @param GameRepositoryInterface      $gameRepository
+     * @param GameInitialDataSeedInterface $gameInitialDataSeed
+     * @param PlayerService                $playerService
      */
     public function __construct(
         GameRepositoryInterface $gameRepository,
-        GameInitialDataSeedInterface $gameInitialDataSeed
-    )
-    {
-        $this->gameRepository = $gameRepository;
+        GameInitialDataSeedInterface $gameInitialDataSeed,
+        PlayerService $playerService
+    ) {
+        $this->gameRepository      = $gameRepository;
         $this->gameInitialDataSeed = $gameInitialDataSeed;
+        $this->playerService       = $playerService;
     }
 
     /**
@@ -105,11 +114,12 @@ class GameController extends Controller
 
     public function gameInit(Game $game)
     {
-        //$dataSeed = $this->gameInitialDataSeed->seedFromBaseTables($game);
         // map base tables with game tables (countries, cities, clubs, competitions, stadiums)
+        $dataSeed = $this->gameInitialDataSeed->seedFromBaseTables($game);
 
         // create all players for game_id
-
-        // create managers
+        //create a single player
+        $player          = $this->playerService->createPlayer();
+        $player->game_id = $game->id;
     }
 }
