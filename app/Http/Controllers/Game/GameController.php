@@ -3,18 +3,23 @@
 namespace App\Http\Controllers\Game;
 
 use App\Factories\Game\GameFactory;
-use App\Models\Game\Game;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\GameCreateRequest;
 use App\Http\Resources\Club\ClubResource;
 use App\Http\Resources\Game\GameResource;
+use App\Models\Club\Club;
 use App\Models\Game\BaseClubs;
 use App\Models\Game\BaseCompetitions;
 use App\Models\Game\BaseCountries;
+use App\Models\Game\Game;
+use App\Models\Player\Player;
+use App\Models\Player\Position;
 use App\Repositories\Interfaces\GameRepositoryInterface;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PlayerService\PlayerService;
+use stdClass;
 
 class GameController extends Controller
 {
@@ -32,6 +37,8 @@ class GameController extends Controller
      * @var PlayerService
      */
     protected $playerService;
+
+    protected $gameId;
 
     /**
      * GameController constructor.
@@ -98,8 +105,6 @@ class GameController extends Controller
 
     /**
      * @param GameCreateRequest $request
-     *
-     * @return GameResource
      */
     public function store(GameCreateRequest $request)
     {
@@ -107,19 +112,61 @@ class GameController extends Controller
 
         $game = $gameFactory->setNewGame();
 
+        $this->gameId = $game->id;
+
         if ($game instanceof Game) {
             $this->gameInit($game);
         }
     }
 
+    /**
+     * @param Game $game
+     */
     public function gameInit(Game $game)
     {
         // map base tables with game tables (countries, cities, clubs, competitions, stadiums)
-        $dataSeed = $this->gameInitialDataSeed->seedFromBaseTables($game);
+        // seed only if game tables are empty
+        //$dataSeed = $this->gameInitialDataSeed->seedFromBaseTables($game);
 
         // create all players for game_id
         //create a single player
-        $player          = $this->playerService->createPlayer();
-        $player->game_id = $game->id;
+
+        $clubs                 = Club::all();
+        $initialPlayerCreation = new InitialClubPeoplePotential();
+
+        foreach ($clubs as $club) {
+            $playerPotentialList = $initialPlayerCreation->getPlayerPotentialListByClubRank($club->rank);
+
+            foreach ($playerPotentialList as $playerPotential) {
+                $servicePlayer = $this->playerService->createPlayer($playerPotential);
+                $this->createPlayer($servicePlayer);
+            }
+        }
+    }
+
+    private function createPlayer(stdClass $servicePlayer)
+    {
+        $player = new Player();
+
+        foreach ($servicePlayer as $field => $value) {
+            if ($field == 'playerPotential' || $field == 'playerPositions') {
+                continue;
+            }
+
+            $player->{$field} = $value;
+        }
+
+        $player->game_id = $this->gameId;
+        $player->save();
+
+        foreach ($servicePlayer->playerPositions as $alias => $grade) {
+            $position = Position::where('alias', $alias)->first();
+            $player->positions()->attach($position->id, [
+                'game_id'        => $this->gameId,
+                'position_grade' => $grade,
+            ]);
+        }
+
+        return $player;
     }
 }

@@ -14,9 +14,9 @@ class PlayerService implements PlayerServiceInterface
 
     }
 
-    public function createPlayer()
+    public function createPlayer(int $rank)
     {
-        $this->playerCreate = new PlayerCreate(184);
+        $this->playerCreate = new PlayerCreate($rank);
 
         return $this->playerCreate->makePlayer();
     }

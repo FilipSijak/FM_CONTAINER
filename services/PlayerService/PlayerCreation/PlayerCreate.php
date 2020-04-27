@@ -2,9 +2,9 @@
 
 namespace Services\PlayerService\PlayerCreation;
 
+use Faker\Factory;
 use Services\PlayerService\PlayerPosition\PlayerPosition;
 use Services\PlayerService\PlayerPotential\PlayerPotential;
-use Faker\Factory;
 use stdClass;
 
 /**
@@ -25,14 +25,24 @@ class PlayerCreate
     protected $playerInitialAttributes = [];
 
     /**
+     * @var int
+     */
+    protected $rank;
+
+    /**
+     * @var string
+     */
+    protected $position;
+
+    /**
      * PlayerCreate constructor.
      *
      * @param int $rank
      */
     public function __construct(int $rank)
     {
-        $this->player       = new stdClass();
-        $this->player->rank = $rank;
+        $this->player = new stdClass();
+        $this->rank   = $rank;
     }
 
     /**
@@ -63,7 +73,7 @@ class PlayerCreate
      */
     private function setPlayerPotential()
     {
-        $this->player->playerPotential = (array)PlayerPotential::calculatePlayerPotential($this->player->rank);
+        $this->player->playerPotential = (array)PlayerPotential::calculatePlayerPotential($this->rank);
     }
 
     /**
@@ -71,7 +81,7 @@ class PlayerCreate
      */
     private function setPlayerPosition()
     {
-        $this->player->position = PlayerPosition::setRandomPosition();
+        $this->position = PlayerPosition::setRandomPosition();
     }
 
     /**
@@ -79,7 +89,7 @@ class PlayerCreate
      */
     private function setPlayerInitialAttributes()
     {
-        $playerAttributesObject        = new PlayerInitialAttributes($this->player->playerPotential, $this->player->position);
+        $playerAttributesObject        = new PlayerInitialAttributes($this->player->playerPotential, $this->position);
         $this->playerInitialAttributes = $playerAttributesObject->getAllAttributeValues();
 
         foreach ($this->playerInitialAttributes as $key => $value) {

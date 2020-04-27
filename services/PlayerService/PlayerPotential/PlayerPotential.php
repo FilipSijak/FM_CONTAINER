@@ -6,16 +6,26 @@ class PlayerPotential
 {
     const POTENTIAL_BOUNDARIES = [0, 50, 75, 100, 130, 160, 180, 200];
 
-    // Creates random value for tehnical, mental and physical potential
-    // returns object with each value
-    public static function calculatePlayerPotential($coef)
+    /**
+     * Creates random value for technical, mental and physical potential
+     *
+     * @param int $coefficient
+     *
+     * @return \stdClass
+     */
+    public static function calculatePlayerPotential(int $coefficient)
     {
         $playerPotential            = new \stdClass();
         $playerAttributesCategories = ['technical', 'mental', 'physical'];
 
         for ($i = 0; $i < 3; $i++) {
+            if (in_array($coefficient, self::POTENTIAL_BOUNDARIES)) {
+                $playerPotential->{$playerAttributesCategories[$i]} = $coefficient;
+                continue;
+            }
+
             for ($k = 1; $k < count(self::POTENTIAL_BOUNDARIES); $k++) {
-                if ($coef < self::POTENTIAL_BOUNDARIES[$k] && $coef > self::POTENTIAL_BOUNDARIES[$k - 1]) {
+                if ($coefficient < self::POTENTIAL_BOUNDARIES[$k] && $coefficient > self::POTENTIAL_BOUNDARIES[$k - 1]) {
                     $potentialValue = rand(self::POTENTIAL_BOUNDARIES[$k - 1], self::POTENTIAL_BOUNDARIES[$k]);
                 }
             }
@@ -26,7 +36,12 @@ class PlayerPotential
         return $playerPotential;
     }
 
-    public static function playerPotentialLabel($potential)
+    /**
+     * @param int $potential
+     *
+     * @return mixed
+     */
+    public static function playerPotentialLabel(int $potential)
     {
         $labels = [
             'amateur'      => 50,
@@ -38,11 +53,9 @@ class PlayerPotential
             'world_class'  => 200,
         ];
 
-        $labels_flipped = array_flip($labels);
-
-        foreach ($labels as $label_coeficient) {
-            if ($potential <= $label_coeficient) {
-                return $labels_flipped[$label_coeficient];
+        foreach ($labels as $labelCoefficient) {
+            if ($potential <= $labelCoefficient) {
+                return array_flip($labels)[$labelCoefficient];
             }
         }
     }
