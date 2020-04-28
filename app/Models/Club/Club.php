@@ -15,4 +15,9 @@ class Club extends Model
      * @var bool
      */
     public $timestamps = false;
+
+    public function players()
+    {
+        return $this->belongsToMany('App\Models\Player\Player', 'player_club');
+    }
 }

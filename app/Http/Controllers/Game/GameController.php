@@ -139,7 +139,8 @@ class GameController extends Controller
 
             foreach ($playerPotentialList as $playerPotential) {
                 $servicePlayer = $this->playerService->createPlayer($playerPotential);
-                $this->createPlayer($servicePlayer);
+                $player = $this->createPlayer($servicePlayer);
+                $player->clubs()->attach($club->id);
             }
         }
     }

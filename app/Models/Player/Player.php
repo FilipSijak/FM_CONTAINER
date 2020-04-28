@@ -12,4 +12,9 @@ class Player extends Model
     {
         return $this->belongsToMany('App\Models\Player\Position');
     }
+
+    public function clubs()
+    {
+        return $this->belongsToMany('App\Models\Club\Club', 'player_club');
+    }
 }
