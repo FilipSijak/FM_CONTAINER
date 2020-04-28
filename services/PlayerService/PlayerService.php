@@ -7,17 +7,21 @@ use Services\PlayerService\PlayerCreation\PlayerCreate;
 
 class PlayerService implements PlayerServiceInterface
 {
-    protected $playerCreate;
+    /**
+     * @var int
+     */
+    protected $playerPotential;
 
-    public function __construct()
-    {
+    public function setPlayerPotential(int $playerPotential) {
+        $this->playerPotential = $playerPotential;
 
+        return $this;
     }
 
-    public function createPlayer(int $rank)
+    public function createPlayer()
     {
-        $this->playerCreate = new PlayerCreate($rank);
+        $playerCreate = new PlayerCreate($this->playerPotential);
 
-        return $this->playerCreate->makePlayer();
+        return $playerCreate->makePlayer($this->playerPotential);
     }
 }

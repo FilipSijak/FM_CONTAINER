@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Game;
 
 use App\Factories\Game\GameFactory;
+use App\Factories\Player\PlayerFactory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\GameCreateRequest;
 use App\Http\Resources\Club\ClubResource;
@@ -12,14 +13,11 @@ use App\Models\Game\BaseClubs;
 use App\Models\Game\BaseCompetitions;
 use App\Models\Game\BaseCountries;
 use App\Models\Game\Game;
-use App\Models\Player\Player;
-use App\Models\Player\Position;
 use App\Repositories\Interfaces\GameRepositoryInterface;
 use Illuminate\Http\Request;
 use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PlayerService\PlayerService;
-use stdClass;
 
 class GameController extends Controller
 {
@@ -129,45 +127,22 @@ class GameController extends Controller
         //$dataSeed = $this->gameInitialDataSeed->seedFromBaseTables($game);
 
         // create all players for game_id
-        //create a single player
-
         $clubs                 = Club::all();
         $initialPlayerCreation = new InitialClubPeoplePotential();
+        $playerFactory         = new PlayerFactory();
 
         foreach ($clubs as $club) {
+            // returns list of 25 player potentials
             $playerPotentialList = $initialPlayerCreation->getPlayerPotentialListByClubRank($club->rank);
 
             foreach ($playerPotentialList as $playerPotential) {
-                $servicePlayer = $this->playerService->createPlayer($playerPotential);
-                $player = $this->createPlayer($servicePlayer);
+                // returns generated player profile based on potential
+                $servicePlayer = $this->playerService->setPlayerPotential($playerPotential)->createPlayer();
+                // storing that player in database
+                $player = $playerFactory->make($servicePlayer, $this->gameId);
+
                 $player->clubs()->attach($club->id);
             }
         }
-    }
-
-    private function createPlayer(stdClass $servicePlayer)
-    {
-        $player = new Player();
-
-        foreach ($servicePlayer as $field => $value) {
-            if ($field == 'playerPotential' || $field == 'playerPositions') {
-                continue;
-            }
-
-            $player->{$field} = $value;
-        }
-
-        $player->game_id = $this->gameId;
-        $player->save();
-
-        foreach ($servicePlayer->playerPositions as $alias => $grade) {
-            $position = Position::where('alias', $alias)->first();
-            $player->positions()->attach($position->id, [
-                'game_id'        => $this->gameId,
-                'position_grade' => $grade,
-            ]);
-        }
-
-        return $player;
     }
 }
