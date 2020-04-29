@@ -20,4 +20,9 @@ class Club extends Model
     {
         return $this->belongsToMany('App\Models\Player\Player', 'player_club');
     }
+
+    public function balance()
+    {
+        return $this->hasOne(Balance::class);
+    }
 }

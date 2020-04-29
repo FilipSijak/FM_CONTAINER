@@ -19,7 +19,7 @@ class CreateBalancesTable extends Migration
             $table->integer('club_id');
             $table->integer('balance');
             $table->integer('debt');
-            $table->date('debt_expiration');
+            $table->date('debt_expiration')->nullable();
         });
     }
 

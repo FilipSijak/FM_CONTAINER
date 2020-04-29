@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Game;
 
+use App\Factories\Club\BalanceFactory;
 use App\Factories\Game\GameFactory;
 use App\Factories\Player\PlayerFactory;
 use App\Http\Controllers\Controller;
@@ -130,11 +131,13 @@ class GameController extends Controller
         $clubs                 = Club::all();
         $initialPlayerCreation = new InitialClubPeoplePotential();
         $playerFactory         = new PlayerFactory();
+        $balanceFactory        = new BalanceFactory();
 
         foreach ($clubs as $club) {
             // returns list of 25 player potentials
             $playerPotentialList = $initialPlayerCreation->getPlayerPotentialListByClubRank($club->rank);
-
+            // creates a balance for the club
+            $balanceFactory->make($club, $this->gameId);
             foreach ($playerPotentialList as $playerPotential) {
                 // returns generated player profile based on potential
                 $servicePlayer = $this->playerService->setPlayerPotential($playerPotential)->createPlayer();
