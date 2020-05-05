@@ -14,7 +14,7 @@ class CreateLeague
     public function __construct(Collection $clubs)
     {
         $this->clubs = $clubs;
-        $this->size = $clubs->count();
+        $this->size  = $clubs->count();
     }
 
     /**
@@ -30,7 +30,7 @@ class CreateLeague
                     continue;
                 }
 
-                $game = new \stdClass();
+                $game           = new \stdClass();
                 $game->homeTeam = $this->clubs[$i]->name;
                 $game->awayTeam = $this->clubs[$k]->name;
 
