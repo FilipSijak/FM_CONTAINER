@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Repositories\Interfaces\GameRepositoryInterface;
+use App\Repositories\Interfaces\SeasonRepositoryInterface;
+use App\Repositories\SeasonRepository;
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\GameRepository;
 
@@ -18,6 +20,11 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             GameRepositoryInterface::class,
             GameRepository::class
+        );
+
+        $this->app->bind(
+            SeasonRepositoryInterface::class,
+            SeasonRepository::class
         );
     }
 

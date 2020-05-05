@@ -6,5 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Season extends Model
 {
-    //
+    /**
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
+     * @var string
+     */
+    protected $table = 'seasons';
 }
