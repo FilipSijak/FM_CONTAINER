@@ -3,7 +3,6 @@
 namespace App\Factories\Game;
 
 use App\Models\Game\Game;
-use App\Http\Requests\Game\GameCreateRequest;
 use Carbon\Carbon;
 
 /**
@@ -14,26 +13,11 @@ use Carbon\Carbon;
 class GameFactory
 {
     /**
-     * @var GameCreateRequest
-     */
-    protected $request;
-
-    /**
-     * GameFactory constructor.
+     * @param int $userId
      *
-     * @param GameCreateRequest $request
-     */
-    public function __construct(GameCreateRequest $request)
-    {
-        $this->request = $request;
-
-        return $this;
-    }
-
-    /**
      * @return Game|bool
      */
-    public function setNewGame()
+    public function setNewGame(int $userId)
     {
         try {
             $now  = Carbon::now()->timestamp;
@@ -42,8 +26,7 @@ class GameFactory
             $game->created_at   = $now;
             $game->updated_at   = $now;
             $game->game_version = null;
-            $game->user_id      = $this->request->post('user_id');
-            $game->club_id      = $this->request->post('club_id');
+            $game->user_id      = $userId;
 
             if ($game->save()) {
                 return $game;

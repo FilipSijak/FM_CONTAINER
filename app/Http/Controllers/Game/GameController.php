@@ -2,21 +2,17 @@
 
 namespace App\Http\Controllers\Game;
 
-use App\Factories\Club\BalanceFactory;
-use App\Factories\Game\GameFactory;
-use App\Factories\Player\PlayerFactory;
+use App\GameEngine\GameCreation\CreateGame;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\GameCreateRequest;
 use App\Http\Resources\Club\ClubResource;
 use App\Http\Resources\Game\GameResource;
-use App\Models\Club\Club;
 use App\Models\Game\BaseClubs;
 use App\Models\Game\BaseCompetitions;
 use App\Models\Game\BaseCountries;
 use App\Models\Game\Game;
 use App\Repositories\Interfaces\GameRepositoryInterface;
 use Illuminate\Http\Request;
-use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PlayerService\PlayerService;
 
@@ -38,6 +34,8 @@ class GameController extends Controller
     protected $playerService;
 
     protected $gameId;
+
+    protected $createGameInstance;
 
     /**
      * GameController constructor.
@@ -79,6 +77,20 @@ class GameController extends Controller
     }
 
     /**
+     * @param GameCreateRequest $request
+     */
+    public function store(GameCreateRequest $request)
+    {
+        $this->createGameInstance = new CreateGame($request->post('user_id'));
+
+        $this->createGameInstance->startNewGame()
+                                 ->setAllClubs()
+                                 ->assignPlayersToClubs($this->playerService)
+                                 ->assignBalancesToClubs()
+                                 ->assignSeasonToGame();
+    }
+
+    /**
      * @return \Illuminate\Http\JsonResponse
      */
     public function getCountriesAndCompetitions()
@@ -100,52 +112,5 @@ class GameController extends Controller
     public function getClubsByCompetition(Request $request)
     {
         return ClubResource::collection(BaseClubs::all()->where('competition_id', $request->get('competition_id')));
-    }
-
-    /**
-     * @param GameCreateRequest $request
-     */
-    public function store(GameCreateRequest $request)
-    {
-        $gameFactory = new GameFactory($request);
-
-        $game = $gameFactory->setNewGame();
-
-        $this->gameId = $game->id;
-
-        if ($game instanceof Game) {
-            $this->gameInit($game);
-        }
-    }
-
-    /**
-     * @param Game $game
-     */
-    public function gameInit(Game $game)
-    {
-        // map base tables with game tables (countries, cities, clubs, competitions, stadiums)
-        // seed only if game tables are empty
-        //$dataSeed = $this->gameInitialDataSeed->seedFromBaseTables($game);
-
-        // create all players for game_id
-        $clubs                 = Club::all();
-        $initialPlayerCreation = new InitialClubPeoplePotential();
-        $playerFactory         = new PlayerFactory();
-        $balanceFactory        = new BalanceFactory();
-
-        foreach ($clubs as $club) {
-            // returns list of 25 player potentials
-            $playerPotentialList = $initialPlayerCreation->getPlayerPotentialListByClubRank($club->rank);
-            // creates a balance for the club
-            $balanceFactory->make($club, $this->gameId);
-            foreach ($playerPotentialList as $playerPotential) {
-                // returns generated player profile based on potential
-                $servicePlayer = $this->playerService->setPlayerPotential($playerPotential)->createPlayer();
-                // storing that player in database
-                $player = $playerFactory->make($servicePlayer, $this->gameId);
-
-                $player->clubs()->attach($club->id);
-            }
-        }
     }
 }
