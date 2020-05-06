@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Game;
 
+use App\Factories\Competition\SeasonFactory;
 use App\GameEngine\GameCreation\CreateGame;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\GameCreateRequest;
@@ -12,6 +13,7 @@ use App\Models\Game\BaseCompetitions;
 use App\Models\Game\BaseCountries;
 use App\Models\Game\Game;
 use App\Repositories\Interfaces\GameRepositoryInterface;
+use App\Repositories\Interfaces\SeasonRepositoryInterface;
 use Illuminate\Http\Request;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PlayerService\PlayerService;
@@ -33,7 +35,10 @@ class GameController extends Controller
      */
     protected $playerService;
 
-    protected $gameId;
+    /**
+     * @var SeasonRepositoryInterface
+     */
+    protected $seasonRepository;
 
     protected $createGameInstance;
 
@@ -47,11 +52,13 @@ class GameController extends Controller
     public function __construct(
         GameRepositoryInterface $gameRepository,
         GameInitialDataSeedInterface $gameInitialDataSeed,
-        PlayerService $playerService
+        PlayerService $playerService,
+        SeasonRepositoryInterface $seasonRepository
     ) {
         $this->gameRepository      = $gameRepository;
         $this->gameInitialDataSeed = $gameInitialDataSeed;
         $this->playerService       = $playerService;
+        $this->seasonRepository = $seasonRepository;
     }
 
     /**
@@ -81,13 +88,18 @@ class GameController extends Controller
      */
     public function store(GameCreateRequest $request)
     {
-        $this->createGameInstance = new CreateGame($request->post('user_id'));
+        $this->createGameInstance = new CreateGame(
+            $request->post('user_id')
+        );
+
+        $seasonFactory = new SeasonFactory();
 
         $this->createGameInstance->startNewGame()
                                  ->setAllClubs()
                                  ->assignPlayersToClubs($this->playerService)
                                  ->assignBalancesToClubs()
-                                 ->assignSeasonToGame();
+                                 ->assignSeasonToGame($seasonFactory)
+                                 ->assignCompetitionsToSeason();
     }
 
     /**

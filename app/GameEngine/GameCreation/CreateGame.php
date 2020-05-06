@@ -3,6 +3,7 @@
 namespace App\GameEngine\GameCreation;
 
 use App\Factories\Club\BalanceFactory;
+use App\Factories\Competition\SeasonFactory;
 use App\Factories\Game\GameFactory;
 use App\Factories\Player\PlayerFactory;
 use App\GameEngine\Interfaces\CreateGameInterface;
@@ -22,6 +23,13 @@ class CreateGame implements CreateGameInterface
 
     protected $clubs;
 
+    protected $season;
+
+    /**
+     * CreateGame constructor.
+     *
+     * @param int $userId
+     */
     public function __construct(int $userId)
     {
         $this->userId = $userId;
@@ -29,11 +37,17 @@ class CreateGame implements CreateGameInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function getExistingGames()
     {
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function startNewGame()
     {
         $gameFactory = new GameFactory();
@@ -45,6 +59,9 @@ class CreateGame implements CreateGameInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setAllClubs()
     {
         $this->clubs = Club::all();
@@ -52,6 +69,11 @@ class CreateGame implements CreateGameInterface
         return $this;
     }
 
+    /**
+     * @param int $clubId
+     *
+     * @return $this
+     */
     public function setClub(int $clubId)
     {
         $this->clubId = $clubId;
@@ -59,6 +81,11 @@ class CreateGame implements CreateGameInterface
         return $this;
     }
 
+    /**
+     * @param PlayerServiceInterface $playerService
+     *
+     * @return $this
+     */
     public function assignPlayersToClubs(PlayerServiceInterface $playerService)
     {
         $initialPlayerCreation = new InitialClubPeoplePotential();
@@ -80,9 +107,12 @@ class CreateGame implements CreateGameInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function assignBalancesToClubs()
     {
-        $balanceFactory        = new BalanceFactory();
+        $balanceFactory = new BalanceFactory();
 
         foreach ($this->clubs as $club) {
             $balanceFactory->make($club, $this->gameId);
@@ -91,8 +121,22 @@ class CreateGame implements CreateGameInterface
         return $this;
     }
 
-    public function assignSeasonToGame()
+    /**
+     * @param SeasonFactory $seasonFactory
+     *
+     * @return $this
+     */
+    public function assignSeasonToGame(SeasonFactory $seasonFactory)
     {
+        $this->season = $seasonFactory->make($this->gameId);
+
+        $this->season->save();
+
         return $this;
+    }
+
+    public function assignCompetitionsToSeason()
+    {
+
     }
 }

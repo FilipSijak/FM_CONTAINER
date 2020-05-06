@@ -2,6 +2,7 @@
 
 namespace App\GameEngine\Interfaces;
 
+use App\Factories\Competition\SeasonFactory;
 use Services\PlayerService\Interfaces\PlayerServiceInterface;
 
 interface CreateGameInterface
@@ -14,5 +15,5 @@ interface CreateGameInterface
 
     public function assignBalancesToClubs();
 
-    public function assignSeasonToGame();
+    public function assignSeasonToGame(SeasonFactory $seasonFactory);
 }
