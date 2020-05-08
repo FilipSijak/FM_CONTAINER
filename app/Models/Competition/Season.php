@@ -15,4 +15,9 @@ class Season extends Model
      * @var string
      */
     protected $table = 'seasons';
+
+    public function competitions()
+    {
+        return $this->belongsToMany(Competition::class);
+    }
 }

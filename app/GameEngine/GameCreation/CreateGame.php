@@ -3,12 +3,16 @@
 namespace App\GameEngine\GameCreation;
 
 use App\Factories\Club\BalanceFactory;
+use App\Factories\Competition\PointsFactory;
 use App\Factories\Competition\SeasonFactory;
 use App\Factories\Game\GameFactory;
 use App\Factories\Player\PlayerFactory;
 use App\GameEngine\Interfaces\CreateGameInterface;
 use App\Models\Club\Club;
+use App\Models\Competition\Competition;
+use App\Repositories\CompetitionRepository;
 use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
+use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PlayerService\Interfaces\PlayerServiceInterface;
 
 class CreateGame implements CreateGameInterface
@@ -55,6 +59,13 @@ class CreateGame implements CreateGameInterface
         $this->newGame = $gameFactory->setNewGame($this->userId);
 
         $this->gameId = $this->newGame->id;
+
+        return $this;
+    }
+
+    public function populateFromBaseTables(GameInitialDataSeedInterface $gameInitialDataSeed)
+    {
+        $gameInitialDataSeed->seedFromBaseTables($this->gameId);
 
         return $this;
     }
@@ -137,6 +148,24 @@ class CreateGame implements CreateGameInterface
 
     public function assignCompetitionsToSeason()
     {
+        $competitions          = Competition::all();
+        $competitionRepository = new CompetitionRepository();
+        $pointsFactory         = new PointsFactory();
 
+        foreach ($competitions as $competition) {
+
+            $clubsByCompetition = $competitionRepository->getBaseClubsByCompetition($competition);
+
+            foreach ($clubsByCompetition as $club) {
+                $competition->seasons()->attach($this->season->id, ['game_id' => $this->gameId, 'club_id' => $club->id]);
+
+                $pointsFactory->make(
+                    $club->id,
+                    $this->gameId,
+                    $competition->id,
+                    $this->season->id
+                );
+            }
+        }
     }
 }

@@ -18,7 +18,7 @@ class CreateCitiesTable extends Migration
             $table->integer('game_id');
             $table->string('name');
             $table->integer('population');
-            $table->varchar('country_code');
+            $table->string('country_code');
         });
     }
 

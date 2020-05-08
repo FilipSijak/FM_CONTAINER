@@ -95,6 +95,7 @@ class GameController extends Controller
         $seasonFactory = new SeasonFactory();
 
         $this->createGameInstance->startNewGame()
+                                 ->populateFromBaseTables($this->gameInitialDataSeed)
                                  ->setAllClubs()
                                  ->assignPlayersToClubs($this->playerService)
                                  ->assignBalancesToClubs()

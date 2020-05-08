@@ -17,7 +17,7 @@ class CreateClubsTable extends Migration
             $table->increments('id');
             $table->string('name');
             $table->integer('game_id');
-            $table->varchar('country_code');
+            $table->string('country_code');
             $table->integer('city_id')->unsigned()->nullable();
             $table->integer('stadium_id')->unsigned()->nullable();
             $table->integer('rank');
