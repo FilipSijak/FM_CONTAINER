@@ -70,13 +70,13 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
     /**
      * @param Game $game
      */
-    public function seedFromBaseTables(Game $game)
+    public function seedFromBaseTables(int $gameId)
     {
         if (Stadium::all()->count() === 0) {
             foreach ($this->baseStadium::all() as $baseStadium) {
                 $stadium = new StadiumFactory(
                     $baseStadium->name,
-                    $game->id,
+                    $gameId,
                     $baseStadium->country_code,
                     $baseStadium->city_id,
                     $baseStadium->capacity
@@ -91,7 +91,7 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
 
                     $country->code       = $baseCountry->code;
                     $country->name       = $baseCountry->name;
-                    $country->game_id    = $game->id;
+                    $country->game_id    = $gameId;
                     $country->ranking    = $baseCountry->ranking;
                     $country->population = $baseCountry->population;
                     $country->gdp        = $baseCountry->gdp;
@@ -112,7 +112,7 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
 
                     $competition->name         = $baseCompetition->name;
                     $competition->country_code = $baseCompetition->country_code;
-                    $competition->game_id      = $game->id;
+                    $competition->game_id      = $gameId;
                     $competition->rank         = $baseCompetition->rank;
                     $competition->type         = $baseCompetition->type;
 
@@ -130,7 +130,7 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
                     $club = new Club();
 
                     $club->name          = $baseClub->name;
-                    $club->game_id       = $game->id;
+                    $club->game_id       = $gameId;
                     $club->country_code  = $baseClub->country_code;
                     $club->city_id       = $baseClub->city_id;
                     $club->stadium_id    = $baseClub->stadium_id;
@@ -151,7 +151,7 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
                     $city = new City();
 
                     $city->name         = $baseCity->name;
-                    $city->game_id      = $game->id;
+                    $city->game_id      = $gameId;
                     $city->country_code = $baseCity->country_code;
                     $city->population   = $baseCity->population;
 

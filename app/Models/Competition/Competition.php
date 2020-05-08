@@ -15,4 +15,14 @@ class Competition extends Model
      * @var bool
      */
     public $timestamps = false;
+
+    public function seasons()
+    {
+        return $this->belongsToMany(Season::class);
+    }
+
+    public function points()
+    {
+        return $this->hasMany(CompetitionPoints::class, 'competition_id');
+    }
 }
