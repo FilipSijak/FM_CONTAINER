@@ -21,7 +21,7 @@ class CreateMatchesTable extends Migration
             $table->integer('awayteam_id')->unsigned();
             $table->integer('stadium_id')->unsigned();
             $table->integer('attendance');
-            $table->dateTime('game_start');
+            $table->dateTime('game_start')->nullable();
         });
     }
 
