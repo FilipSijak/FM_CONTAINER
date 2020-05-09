@@ -30,9 +30,11 @@ class CreateLeague
                     continue;
                 }
 
-                $game           = new \stdClass();
-                $game->homeTeam = $this->clubs[$i]->name;
-                $game->awayTeam = $this->clubs[$k]->name;
+                $game               = new \stdClass();
+                $game->homeTeamId   = $this->clubs[$i]->id;
+                $game->homeTeamName = $this->clubs[$i]->name;
+                $game->awayTeamId   = $this->clubs[$k]->id;
+                $game->awayTeamName = $this->clubs[$k]->name;
 
                 $games[] = $game;
             }

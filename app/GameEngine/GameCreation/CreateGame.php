@@ -3,6 +3,7 @@
 namespace App\GameEngine\GameCreation;
 
 use App\Factories\Club\BalanceFactory;
+use App\Factories\Competition\MatchFactory;
 use App\Factories\Competition\PointsFactory;
 use App\Factories\Competition\SeasonFactory;
 use App\Factories\Game\GameFactory;
@@ -12,6 +13,7 @@ use App\Models\Club\Club;
 use App\Models\Competition\Competition;
 use App\Repositories\CompetitionRepository;
 use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
+use Services\CompetitionService\CompetitionService;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PlayerService\Interfaces\PlayerServiceInterface;
 
@@ -155,6 +157,10 @@ class CreateGame implements CreateGameInterface
         foreach ($competitions as $competition) {
 
             $clubsByCompetition = $competitionRepository->getBaseClubsByCompetition($competition);
+            $competitionService = new CompetitionService($clubsByCompetition);
+            $leagueFixtures     = $competitionService->makeLeague();
+
+            $this->populateLeagueFixtures($leagueFixtures, $competition->id);
 
             foreach ($clubsByCompetition as $club) {
                 $competition->seasons()->attach($this->season->id, ['game_id' => $this->gameId, 'club_id' => $club->id]);
@@ -166,6 +172,24 @@ class CreateGame implements CreateGameInterface
                     $this->season->id
                 );
             }
+        }
+    }
+
+    /**
+     * @param array $leagueFixtures
+     * @param       $competitionId
+     */
+    private function populateLeagueFixtures(array $leagueFixtures, $competitionId)
+    {
+        $matchFactory = new MatchFactory();
+
+        foreach ($leagueFixtures as $fixture) {
+            $matchFactory->make(
+                $this->gameId,
+                $competitionId,
+                $fixture->homeTeamId,
+                $fixture->awayTeamId
+            );
         }
     }
 }
