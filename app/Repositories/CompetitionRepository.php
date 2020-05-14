@@ -16,4 +16,14 @@ class CompetitionRepository
     {
         return BaseClubs::all()->where('competition_id', $competition->id);
     }
+
+    public function getScheduledGames($gameId)
+    {
+
+    }
+
+    public function getScheduledGamesForCompetition(int $competitionId)
+    {
+
+    }
 }
