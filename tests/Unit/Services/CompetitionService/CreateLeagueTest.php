@@ -3,7 +3,7 @@
 namespace Tests\Unit\Services\CompetitionService;
 
 use App\Models\Club\Club;
-use Services\CompetitionService\League\CreateLeague;
+use Services\CompetitionService\League\League;
 use Tests\TestCase;
 
 class CreateLeagueTest extends TestCase
@@ -22,7 +22,7 @@ class CreateLeagueTest extends TestCase
 
     public function testLeagueGamesNumber()
     {
-        $league              = new CreateLeague($this->clubs);
+        $league              = new League($this->clubs);
         $games               = $league->make();
         $expectedLeagueGames = $this->clubs->count() * ($this->clubs->count() - 1);
 
