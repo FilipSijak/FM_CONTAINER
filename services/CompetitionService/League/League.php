@@ -4,7 +4,7 @@ namespace Services\CompetitionService\League;
 
 use Illuminate\Database\Eloquent\Collection;
 
-class CreateLeague
+class League
 {
     protected $clubs;
 
@@ -21,7 +21,7 @@ class CreateLeague
         $this->clubs                = $clubs;
         $this->competitionSize      = count($clubs);
         $this->numberOfGamesInRound = $this->competitionSize / 2;
-        $this->fixed                = $clubs[0]->id;
+        $this->fixed                = !empty($clubs->first()) ? $clubs->first()->id : 0;
     }
 
     /**
@@ -31,8 +31,9 @@ class CreateLeague
      *
      * @return array
      */
-    public function make()
+    public function generateLeagueGames()
     {
+        // Creates first round
         for ($i = 0, $k = $this->competitionSize - 1; $i < $k; $i++, $k--) {
             $game             = new \stdClass();
             $game->homeTeamId = $this->clubs[$i]->id;
@@ -41,17 +42,20 @@ class CreateLeague
             $this->games[] = $game;
         }
 
+        // Based on first round games, this will loop and set the rest of rounds
         for ($i = 0; $i < $this->competitionSize - 2; $i++) {
-            $this->generateLeagueGames();
+            $this->generateSingleRoundGames();
         }
 
         return $this->games;
     }
 
     /**
+     * Generates all the games for a single round
+     *
      * @return array
      */
-    private function generateLeagueGames()
+    private function generateSingleRoundGames()
     {
         $localGames = [];
         $this->home = !$this->home;

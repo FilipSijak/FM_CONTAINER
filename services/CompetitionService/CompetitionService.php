@@ -4,7 +4,7 @@ namespace Services\CompetitionService;
 
 use Illuminate\Database\Eloquent\Collection;
 use Services\CompetitionService\Interfaces\CompetitionServiceInterface;
-use Services\CompetitionService\League\CreateLeague;
+use Services\CompetitionService\League\League;
 
 class CompetitionService implements CompetitionServiceInterface
 {
@@ -25,9 +25,9 @@ class CompetitionService implements CompetitionServiceInterface
 
     public function makeLeague()
     {
-        $createLeague = new CreateLeague($this->clubs);
+        $league = new League($this->clubs);
 
-        return $createLeague->make();
+        return $league->generateLeagueGames();
     }
 
     public function makeTournament()
