@@ -6,6 +6,9 @@ use Services\NewsService\Interfaces\NewsServiceInterface;
 
 class NewsService implements NewsServiceInterface
 {
+    /**
+     * @var array
+     */
     protected $news = [];
 
     public function __construct(
@@ -15,6 +18,11 @@ class NewsService implements NewsServiceInterface
 
         $this->news[] = $newsBuilder->build(new MatchesNews());
         $this->news[] = $newsBuilder->build(new TransferNews());
+    }
+
+    public function getNews()
+    {
+        return $this->news;
     }
 
     public function getAllUpdates()
