@@ -12,6 +12,7 @@ use App\GameEngine\Interfaces\CreateGameInterface;
 use App\Models\Club\Club;
 use App\Models\Competition\Competition;
 use App\Repositories\CompetitionRepository;
+use Carbon\Carbon;
 use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
 use Services\CompetitionService\CompetitionService;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
@@ -182,14 +183,21 @@ class CreateGame implements CreateGameInterface
     private function populateLeagueFixtures(array $leagueFixtures, $competitionId)
     {
         $matchFactory = new MatchFactory();
+        $seasonStart = Carbon::create((int) date("Y"), 8, 15)::parse()->modify("next Sunday");
+        $countRound  = count($this->clubs) / 2;
 
         foreach ($leagueFixtures as $fixture) {
+            $nextWeek = $countRound % 10 == 0;
+
             $matchFactory->make(
                 $this->gameId,
                 $competitionId,
                 $fixture->homeTeamId,
-                $fixture->awayTeamId
+                $fixture->awayTeamId,
+                $nextWeek ? $seasonStart->addWeek(1) : $seasonStart
             );
+
+            $countRound++;
         }
     }
 }

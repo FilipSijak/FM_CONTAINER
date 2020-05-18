@@ -3,7 +3,7 @@
 namespace App\Factories\Competition;
 
 use App\Models\Competition\Match;
-use Nexmo\Client\Exception\Exception;
+use Carbon\Carbon;
 
 class MatchFactory
 {
@@ -12,13 +12,15 @@ class MatchFactory
      * @param int    $competitionId
      * @param int    $homeTeamId
      * @param int    $awayTeamId
+     * @param Carbon $matchStart
      */
     public function make
     (
         int $gameId,
         int $competitionId,
         int $homeTeamId,
-        int $awayTeamId
+        int $awayTeamId,
+        Carbon $matchStart
     ) {
         $match = new Match();
 
@@ -28,6 +30,7 @@ class MatchFactory
         $match->awayteam_id    = $awayTeamId;
         $match->stadium_id     = 0;
         $match->attendance     = 0;
+        $match->match_start    = $matchStart;
 
         $match->save();
     }
