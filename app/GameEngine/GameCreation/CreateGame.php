@@ -33,13 +33,19 @@ class CreateGame implements CreateGameInterface
     protected $season;
 
     /**
+     * @var Carbon|\DateTime|\DateTimeInterface
+     */
+    protected $firstSeasonFirstRoundStartDate;
+
+    /**
      * CreateGame constructor.
      *
      * @param int $userId
      */
     public function __construct(int $userId)
     {
-        $this->userId = $userId;
+        $this->userId                         = $userId;
+        $this->firstSeasonFirstRoundStartDate = Carbon::create((int)date("Y"), 8, 15);
 
         return $this;
     }
@@ -183,8 +189,8 @@ class CreateGame implements CreateGameInterface
     private function populateLeagueFixtures(array $leagueFixtures, $competitionId)
     {
         $matchFactory = new MatchFactory();
-        $seasonStart = Carbon::create((int) date("Y"), 8, 15)::parse()->modify("next Sunday");
-        $countRound  = count($this->clubs) / 2;
+        $seasonStart  = $this->firstSeasonFirstRoundStartDate::parse()->modify("next Sunday");
+        $countRound   = count($this->clubs) / 2;
 
         foreach ($leagueFixtures as $fixture) {
             $nextWeek = $countRound % 10 == 0;

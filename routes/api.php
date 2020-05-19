@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Game\GameController;
 use Illuminate\Http\Request;
 
 /*
@@ -20,16 +21,11 @@ use Illuminate\Http\Request;
 Route::group(['prefix' => 'games', 'as' => 'game.'], function () {
     Route::get('/', 'Game\GameController@index');
     Route::get('/load', 'Game\GameController@loadGame');
-
-
-
     Route::get('/countries/competitions', 'Game\GameController@getCountriesAndCompetitions');
     Route::get('/competitions/clubs', 'Game\GameController@getClubsByCompetition');
-
-
-
+    Route::get('/{game}/current-day', [GameController::class, 'currentDay']);
+    Route::get('/{game}/next-day', [GameController::class, 'nextDay']);
     Route::post('/store', 'Game\GameController@store')->name('store');
 });
-
 
 Route::get('/test', 'TestController@index');

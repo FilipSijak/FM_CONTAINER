@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Game;
 
 use App\Factories\Competition\SeasonFactory;
 use App\GameEngine\GameCreation\CreateGame;
+use App\GameEngine\Interfaces\GameContainerInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\GameCreateRequest;
 use App\Http\Resources\Club\ClubResource;
@@ -43,22 +44,31 @@ class GameController extends Controller
     protected $createGameInstance;
 
     /**
+     * @var GameContainerInterface
+     */
+    protected $gameContainer;
+
+    /**
      * GameController constructor.
      *
      * @param GameRepositoryInterface      $gameRepository
      * @param GameInitialDataSeedInterface $gameInitialDataSeed
      * @param PlayerService                $playerService
+     * @param SeasonRepositoryInterface    $seasonRepository
+     * @param GameContainerInterface       $gameContainer
      */
     public function __construct(
         GameRepositoryInterface $gameRepository,
         GameInitialDataSeedInterface $gameInitialDataSeed,
         PlayerService $playerService,
-        SeasonRepositoryInterface $seasonRepository
+        SeasonRepositoryInterface $seasonRepository,
+        GameContainerInterface $gameContainer
     ) {
         $this->gameRepository      = $gameRepository;
         $this->gameInitialDataSeed = $gameInitialDataSeed;
         $this->playerService       = $playerService;
-        $this->seasonRepository = $seasonRepository;
+        $this->seasonRepository    = $seasonRepository;
+        $this->gameContainer       = $gameContainer;
     }
 
     /**
@@ -101,6 +111,16 @@ class GameController extends Controller
                                  ->assignBalancesToClubs()
                                  ->assignSeasonToGame($seasonFactory)
                                  ->assignCompetitionsToSeason();
+    }
+
+    public function currentDay(Game $game)
+    {
+        $this->gameContainer->currentDay($game);
+    }
+
+    public function nextDay(Game $game)
+    {
+        $this->gameContainer->moveForward($game);
     }
 
     /**

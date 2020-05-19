@@ -12,8 +12,6 @@ use Carbon\Carbon;
  */
 class GameFactory
 {
-    const FIRST_SEASON_START_DATE = "2020-06-01";
-
     /**
      * @param int $userId
      *
@@ -29,7 +27,7 @@ class GameFactory
             $game->updated_at   = $now;
             $game->game_version = null;
             $game->user_id      = $userId;
-            $game->game_date    = self::FIRST_SEASON_START_DATE;
+            $game->game_date    = Carbon::create((int) date("Y"), 6, 1)->toDateString();
 
             if ($game->save()) {
                 return $game;
