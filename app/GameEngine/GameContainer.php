@@ -4,9 +4,10 @@ namespace App\GameEngine;
 
 use App\GameEngine\Interfaces\GameContainerInterface;
 use App\Models\Game\Game;
-use Illuminate\Support\Carbon;
-use Services\NewsService\Interfaces\NewsServiceInterface;
+use Carbon\Carbon;
+use Services\MatchService\MatchService;
 use Services\NewsService\NewsService;
+use Services\TransferService\TransferService;
 
 class GameContainer implements GameContainerInterface
 {
@@ -15,9 +16,20 @@ class GameContainer implements GameContainerInterface
      */
     protected $newsService;
 
+    /**
+     * @var TransferService
+     */
+    private $transferService;
+    /**
+     * @var MatchService
+     */
+    private $matchService;
+
     public function __construct(
     ) {
         $this->newsService = new NewsService();
+        $this->transferService = new TransferService();
+        $this->matchService = new MatchService();
     }
 
     public function currentDay(Game $game)
@@ -26,8 +38,10 @@ class GameContainer implements GameContainerInterface
         $this->newsService->getNews();
 
         // check transfers (transfer rumors, transfer proposals, transfer deals, contracts etc.)
+        $this->transferService->processTransferBids();
 
         // check matches (any matches today? cant move forward if matches for the day are not played)
+        $this->matchService->simulateRound();
     }
 
     public function moveForward(Game $game)
