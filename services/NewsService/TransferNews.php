@@ -11,7 +11,11 @@ class TransferNews implements NewsBuilderInterface
     public function checkEvents()
     {
         // TODO: Implement checkEvents() method.
-        $this->events[] = 'event  transfer1';
+        $event          = new \stdClass();
+        $event->title   = 'transfer title 1';
+        $event->content = 'transfer content 1';
+
+        $this->events[] = $event;
 
         return $this;
     }

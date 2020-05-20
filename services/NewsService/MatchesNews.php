@@ -11,7 +11,11 @@ class MatchesNews implements NewsBuilderInterface
     public function checkEvents()
     {
         // TODO: Implement checkEvents() method.
-        $this->events[] = 'event 1';
+        $event          = new \stdClass();
+        $event->title   = 'general title 1';
+        $event->content = 'general content 1';
+
+        $this->events[] = $event;
 
         return $this;
     }
