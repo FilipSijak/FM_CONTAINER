@@ -11,13 +11,14 @@ class NewsService implements NewsServiceInterface
      */
     protected $news = [];
 
-    public function __construct(
-    )
+    public function __construct()
     {
         $newsBuilder = new NewsBuilder();
 
-        $this->news[] = $newsBuilder->build(new MatchesNews());
-        $this->news[] = $newsBuilder->build(new TransferNews());
+        $matchNews    = $newsBuilder->build(new MatchesNews());
+        $transferNews = $newsBuilder->build(new TransferNews());
+
+        $this->news = array_merge($matchNews, $transferNews);
     }
 
     public function getNews()

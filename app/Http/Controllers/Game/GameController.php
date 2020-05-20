@@ -14,6 +14,7 @@ use App\Models\Game\BaseCompetitions;
 use App\Models\Game\BaseCountries;
 use App\Models\Game\Game;
 use App\Repositories\Interfaces\GameRepositoryInterface;
+use App\Repositories\Interfaces\NewsRepositoryInterface;
 use App\Repositories\Interfaces\SeasonRepositoryInterface;
 use Illuminate\Http\Request;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
@@ -47,6 +48,10 @@ class GameController extends Controller
      * @var GameContainerInterface
      */
     protected $gameContainer;
+    /**
+     * @var NewsRepositoryInterface
+     */
+    private $newsRepository;
 
     /**
      * GameController constructor.
@@ -56,19 +61,22 @@ class GameController extends Controller
      * @param PlayerService                $playerService
      * @param SeasonRepositoryInterface    $seasonRepository
      * @param GameContainerInterface       $gameContainer
+     * @param NewsRepositoryInterface      $newsRepository
      */
     public function __construct(
         GameRepositoryInterface $gameRepository,
         GameInitialDataSeedInterface $gameInitialDataSeed,
         PlayerService $playerService,
         SeasonRepositoryInterface $seasonRepository,
-        GameContainerInterface $gameContainer
+        GameContainerInterface $gameContainer,
+        NewsRepositoryInterface $newsRepository
     ) {
         $this->gameRepository      = $gameRepository;
         $this->gameInitialDataSeed = $gameInitialDataSeed;
         $this->playerService       = $playerService;
         $this->seasonRepository    = $seasonRepository;
         $this->gameContainer       = $gameContainer;
+        $this->newsRepository      = $newsRepository;
     }
 
     /**
@@ -113,14 +121,31 @@ class GameController extends Controller
                                  ->assignCompetitionsToSeason();
     }
 
-    public function currentDay(Game $game)
+    /**
+     * Get current news for the day
+     *
+     * @param Game $game
+     */
+    public function news(Game $game)
     {
-        $this->gameContainer->currentDay($game);
+        $this->gameContainer->setGame($game)->currentNews();
+
+        //get news
+        $this->newsRepository->getCurrentNews();
+
+        //return NewsResource::collection(News::where('game_id', 1)->get());
     }
 
+    /**
+     * Update game state
+     *
+     * @param Game $game
+     */
     public function nextDay(Game $game)
     {
-        $this->gameContainer->moveForward($game);
+        // @TODO check if all the games were simulated to proceed
+
+        $this->gameContainer->setGame($game)->moveForward();
     }
 
     /**
