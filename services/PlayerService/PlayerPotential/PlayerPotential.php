@@ -13,10 +13,11 @@ class PlayerPotential
      *
      * @return \stdClass
      */
-    public static function calculatePlayerPotential(int $coefficient)
+    public function calculatePlayerPotential(int $coefficient)
     {
         $playerPotential            = new \stdClass();
         $playerAttributesCategories = ['technical', 'mental', 'physical'];
+        $potentialValue             = 0;
 
         for ($i = 0; $i < 3; $i++) {
             if (in_array($coefficient, self::POTENTIAL_BOUNDARIES)) {
@@ -41,7 +42,7 @@ class PlayerPotential
      *
      * @return mixed
      */
-    public static function playerPotentialLabel(int $potential)
+    public function playerPotentialLabel(int $potential)
     {
         $labels = [
             'amateur'      => 50,

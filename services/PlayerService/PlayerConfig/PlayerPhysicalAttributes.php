@@ -2,10 +2,11 @@
 
 namespace Services\PlayerService\PlayerConfig;
 
-/*
- * Player physical attributes
-*/
-
+/**
+ * Class PlayerPhysicalAttributes
+ *
+ * @package Services\PlayerService\PlayerConfig
+ */
 class PlayerPhysicalAttributes
 {
     const PHYSICAL_ATTRS_BY_TYPE = [
@@ -15,11 +16,11 @@ class PlayerPhysicalAttributes
         'fast'      => ['acceleration', 'balance', 'pace', 'natural_fitness'],
     ];
 
-    /*
+    /**
      * @param $position
      *
-     * Takes position as an argument and returns randomly chosen physical type
-    */
+     * @return string
+     */
     public static function getPhysicalTypeBasedOnPosition($position): string
     {
         $typesByPosition        = [
@@ -30,6 +31,7 @@ class PlayerPhysicalAttributes
             'wing_back'             => ['quick', 'endurable', 'fast'],
             'winger'                => ['quick', 'fast'],
         ];
+
         $specifiedPositionTypes = $typesByPosition[$position];
 
         return $specifiedPositionTypes[rand(0, count($specifiedPositionTypes) - 1)];
