@@ -57,7 +57,9 @@ class PlayerInitialAttributes
     {
         foreach ($attributes as $attribute) {
             $this->playerAllAttributes[$attribute] = (int)round(
-                rand($this->playerPotentialByCategory[$attributesCategory] - 15, $this->playerPotentialByCategory[$attributesCategory]) / 10
+                rand($this->playerPotentialByCategory[$attributesCategory] - 15,
+                     $this->playerPotentialByCategory[$attributesCategory]
+                ) / 10
             );
         }
     }
@@ -74,7 +76,10 @@ class PlayerInitialAttributes
     {
         foreach ($attributes as $attribute) {
             $this->playerAllAttributes[$attribute] = (int)round(
-                rand($this->playerPotentialByCategory[$attributesCategory] - 40, $this->playerPotentialByCategory[$attributesCategory]) / 10
+                rand(
+                    $this->playerPotentialByCategory[$attributesCategory] - 40,
+                    $this->playerPotentialByCategory[$attributesCategory]
+                ) / 10
             );
         }
     }

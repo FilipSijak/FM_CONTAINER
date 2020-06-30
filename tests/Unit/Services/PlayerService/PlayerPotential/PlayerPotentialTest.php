@@ -23,7 +23,7 @@ class PlayerPotentialTest extends TestCase
     {
         $playerPotentialCoefficient = 110;
 
-        $potentialLabel = $this->playerPotential::playerPotentialLabel($playerPotentialCoefficient);
+        $potentialLabel = $this->playerPotential->playerPotentialLabel($playerPotentialCoefficient);
 
         $this->assertEquals('normal', $potentialLabel);
     }
@@ -32,7 +32,7 @@ class PlayerPotentialTest extends TestCase
     {
         $playerPotentialCoefficient = 110;
 
-        $playerPotential = $this->playerPotential::calculatePlayerPotential($playerPotentialCoefficient);
+        $playerPotential = $this->playerPotential->calculatePlayerPotential($playerPotentialCoefficient);
 
         $this->assertObjectHasAttribute('technical', $playerPotential);
         $this->assertObjectHasAttribute('mental', $playerPotential);
