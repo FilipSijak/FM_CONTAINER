@@ -3,47 +3,42 @@
 namespace Services\PlayerService\PlayerCreation;
 
 use Services\PlayerService\PlayerConfig\PlayerFields;
-use Services\PlayerService\PlayerConfig\PlayerPosition;
+use Services\PlayerService\PlayerConfig\PlayerPositionConfig;
 use Services\PlayerService\PlayerPotential\PlayerPotential;
 
+/**
+ * Class PlayerInitialAttributes
+ *
+ * @package Services\PlayerService\PlayerCreation
+ */
 class PlayerInitialAttributes
 {
-    protected $player_potential;
-    protected $player_all_attributes = [];
-    protected $player_position;
-    protected $commonAttributes      = ['stamina', 'acceleration', 'strength'];
+    protected $playerPotential;
+    protected $playerPosition;
+    protected $playerAllAttributes = [];
+    protected $commonAttributes    = ['stamina', 'acceleration', 'strength'];
+    protected $playerPotentialByCategory;
 
-    public function __construct($player_potential, $player_position)
-    {
-        $this->player_potential = $player_potential;
-        $this->player_position  = $player_position;
+    public function __construct(
+        array $playerPotentialByCategory,
+        string $playerPosition,
+        PlayerPotential $playerPotential
+    ) {
+        $this->playerPotential           = $playerPotential;
+        $this->playerPosition            = $playerPosition;
+        $this->playerPotentialByCategory = $playerPotentialByCategory;
     }
-
-    // player physical - i could add attribute in his fitness, it would be rating for physique
-    // - it would only be his starting point, fitness attributes would change with his injuries
-    // and age, not potential
-    // starting physique would be identical to overall potential
-
-    // player mental - mental should be separated from  physical and technique, good players could
-    // have bad mentality, it would change with overall happiness and age
-
-    // 190 physical - type speed would give him great pace
-
-    // 170 potential = 17 -max skill from his position important technique attributes
-    // 183 would be 18 max skill
-    // 176 would be 18 max skill
 
     public function getAllAttributeValues()
     {
         $this->setMainAttributes();
 
-        return $this->player_all_attributes;
+        return $this->playerAllAttributes;
     }
 
     protected function setMainAttributes()
     {
-        $attributeCategories = ['technical', 'mental', 'physical'];
-        $mainAttributes      = PlayerPosition::getPositionMainAttributes($this->player_position);
+        $mainAttributes = PlayerPositionConfig::getPositionMainAttributes($this->playerPosition);
 
         foreach ($mainAttributes as $attributesCategory => $importanceList) {
             $this->setPrimaryAttributes($importanceList['primary'], $attributesCategory);
@@ -52,59 +47,81 @@ class PlayerInitialAttributes
         }
     }
 
-    protected function setPrimaryAttributes($attributes, $attributesCategory)
+    /**
+     * This will set attributes for a specific category (e.g. technical)
+     *
+     * @param array  $attributes
+     * @param string $attributesCategory
+     */
+    protected function setPrimaryAttributes(array $attributes, string $attributesCategory)
     {
         foreach ($attributes as $attribute) {
-            $this->player_all_attributes[$attribute] = (int)round(
-                rand($this->player_potential[$attributesCategory] - 15, $this->player_potential[$attributesCategory]) / 10
+            $this->playerAllAttributes[$attribute] = (int)round(
+                rand($this->playerPotentialByCategory[$attributesCategory] - 15,
+                     $this->playerPotentialByCategory[$attributesCategory]
+                ) / 10
             );
         }
     }
 
-    // player should have main attributes higher than others, secondary would also be good
-    // e.q. striker can have 18 finishing but secondary attr would be heading or crossing
-    // secondary attributes would have range $main_coeff -8 for random
+    /**
+     * Secondary attributes would be lower than main (on average) and higher than the rest
+     * If a striker has finishing attribute of 20, his secondary attribute for that position (dribbling) will be lower
+     * (15) but still higher than tackling (8)
+     *
+     * @param $attributes
+     * @param $attributesCategory
+     */
     protected function setSecondaryAttributes($attributes, $attributesCategory)
     {
         foreach ($attributes as $attribute) {
-            $this->player_all_attributes[$attribute] = (int)round(
-                rand($this->player_potential[$attributesCategory] - 40, $this->player_potential[$attributesCategory]) / 10
+            $this->playerAllAttributes[$attribute] = (int)round(
+                rand(
+                    $this->playerPotentialByCategory[$attributesCategory] - 40,
+                    $this->playerPotentialByCategory[$attributesCategory]
+                ) / 10
             );
         }
     }
 
+    /**
+     * Sets the rest of the player attributes that weren't filled by primary or secondary run
+     */
     protected function setOtherAttributes()
     {
-        $all_tehnical_fields = PlayerFields::TEHNICAL_FIELDS;
-        $all_mental_fields   = PlayerFields::MENTAL_FIELDS;
-        $all_physical_fields = PlayerFields::PHYSICAL_FILDS;
-
         $attributeCategories = ['technical', 'mental', 'physical'];
 
-        $all_abillity_attributes = array_merge($all_tehnical_fields, $all_mental_fields, $all_physical_fields);
+        $allAbilityAttributes = array_merge(
+            PlayerFields::TEHNICAL_FIELDS,
+            PlayerFields::MENTAL_FIELDS,
+            PlayerFields::PHYSICAL_FILDS
+        );
 
-        foreach ($all_abillity_attributes as $field) {
+        foreach ($allAbilityAttributes as $field) {
             foreach ($attributeCategories as $category) {
-                if (!isset($this->player_all_attributes[$field])) {
+                // checking the object if the attribute was already set for primary or secondary value
+                if (!isset($this->playerAllAttributes[$field])) {
 
-                    $minimumAttributeValue = self::setMinimumAttributeValue($this->player_potential[$category]);
+                    $minimumAttributeValue = $this->setMinimumAttributeValue($this->playerPotentialByCategory[$category]);
 
                     if (isset($this->commonAttributes[$field])) {
-                        dump($this->commonAttributes[$field]);
                         $minimumAttributeValue = $minimumAttributeValue + 3;
                     }
 
-                    $this->player_all_attributes[$field] = (int)round(rand(9, $this->player_potential[$category] / 10));
+                    $this->playerAllAttributes[$field] = (int)round(rand(9, $this->playerPotentialByCategory[$category] / 10));
                 }
             }
         }
     }
 
-    // This will depend on player potential coefficient
-    // Returns minimum value for all attributes, so even if a player is attacker, his starting position would be above 1 for marking
-    protected static function setMinimumAttributeValue($coef)
+    /**
+     * @param int $playerPotential
+     *
+     * @return int
+     */
+    protected function setMinimumAttributeValue(int $playerPotential)
     {
-        $potentialDescription = PlayerPotential::playerPotentialLabel($coef);
+        $potentialDescription = $this->playerPotential->playerPotentialLabel($playerPotential);
 
         $potentialMinimumAttributesRanges = [
             'amateur'      => 3,

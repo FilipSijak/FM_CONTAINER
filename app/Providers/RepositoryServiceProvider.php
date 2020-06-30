@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\ClubRepository;
+use App\Repositories\Interfaces\ClubRepositoryInterface;
 use App\Repositories\Interfaces\GameRepositoryInterface;
 use App\Repositories\Interfaces\NewsRepositoryInterface;
 use App\Repositories\Interfaces\SeasonRepositoryInterface;
@@ -32,6 +34,11 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             NewsRepositoryInterface::class,
             NewsRepository::class
+        );
+
+        $this->app->bind(
+            ClubRepositoryInterface::class,
+            ClubRepository::class
         );
     }
 

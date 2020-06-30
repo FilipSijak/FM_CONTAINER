@@ -2,26 +2,29 @@
 
 namespace Services\PlayerService\PlayerPosition;
 
-use Services\PlayerService\PlayerConfig\PlayerPosition as PositionConfig;
+use Services\PlayerService\PlayerConfig\PlayerPositionConfig as PositionConfig;
 
+/**
+ * Class PlayerPosition
+ *
+ * @package Services\PlayerService\PlayerPosition
+ */
 class PlayerPosition
 {
-    public static function setRandomPosition()
+    public function getRandomPosition()
     {
         return PositionConfig::getRandomPosition();
     }
 
-    /*
-     * Sets initial positions based on player attributes
-     @param array - list of player attributes and values to decide suitable positions
-    */
-    public static function setInitialPositionsBasedOnAttributes($attributesValues): array
-    {
-        $positionsMainAttributes = self::getMainAttributesForPosition();
-        return self::getAverageGradeByPosition($positionsMainAttributes, $attributesValues);
-    }
-
-    private static function getMainAttributesForPosition(): array
+    /**
+     * Sets initial positions based on provided player attributes
+     * Returns a list of
+     *
+     * @param $attributesValues
+     *
+     * @return array
+     */
+    public function getInitialPositionsBasedOnAttributes($attributesValues): array
     {
         $positionList               = PositionConfig::PLAYER_POSITIONS;
         $positionListMainAttributes = [];
@@ -37,13 +40,16 @@ class PlayerPosition
             );
         }
 
-        return $positionListMainAttributes;
+        return $this->getAverageGradeByPosition($positionListMainAttributes, $attributesValues);
     }
 
-    /*
-     * Sum value for every position
-    */
-    public static function getAverageGradeByPosition(array $positionsWithMainAttributes, array $playerAttributeValues): array
+    /**
+     * @param array $positionsWithMainAttributes
+     * @param array $playerAttributeValues
+     *
+     * @return array
+     */
+    public function getAverageGradeByPosition(array $positionsWithMainAttributes, array $playerAttributeValues): array
     {
         $averageGradeForPosition = [];
 
@@ -60,32 +66,8 @@ class PlayerPosition
         }
 
         asort($averageGradeForPosition);
+
         return array_reverse($averageGradeForPosition);
-    }
-
-    /*
-     * Get list of player positions
-    */
-    public static function getPositionListFromDB($player)
-    {
-
-    }
-
-    /*
-     * Sets initial positions based on player attributes
-     * New position should be set only after player is trained for it
-    */
-    public static function setPosition($player, $position)
-    {
-
-    }
-
-    /*
-     * Remove player position from the list
-    */
-    public static function removePosition($player, $position)
-    {
-
     }
 }
 

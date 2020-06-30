@@ -95,7 +95,6 @@ class GameContainer implements GameContainerInterface
     }
 
     //POST
-
     public function simulateGames()
     {
         $matches = $this->competitionRepository->getScheduledGames($this->game);

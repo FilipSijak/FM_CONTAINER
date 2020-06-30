@@ -32,7 +32,17 @@ class PlayerCreate
     /**
      * @var string
      */
-    protected $position;
+    protected $generatedPosition;
+
+    /**
+     * @var PlayerPosition
+     */
+    private $playerPosition;
+
+    /**
+     * @var PlayerPotential
+     */
+    private $playerPotential;
 
     /**
      * PlayerCreate constructor.
@@ -43,6 +53,9 @@ class PlayerCreate
     {
         $this->player = new stdClass();
         $this->rank   = $rank;
+
+        $this->playerPosition = new PlayerPosition();
+        $this->playerPotential = new PlayerPotential();
     }
 
     /**
@@ -73,7 +86,7 @@ class PlayerCreate
      */
     private function setPlayerPotential()
     {
-        $this->player->playerPotential = (array)PlayerPotential::calculatePlayerPotential($this->rank);
+        $this->player->playerPotential = (array) $this->playerPotential->calculatePlayerPotential($this->rank);
     }
 
     /**
@@ -81,7 +94,7 @@ class PlayerCreate
      */
     private function setPlayerPosition()
     {
-        $this->position = PlayerPosition::setRandomPosition();
+        $this->generatedPosition = $this->playerPosition->getRandomPosition();
     }
 
     /**
@@ -89,7 +102,7 @@ class PlayerCreate
      */
     private function setPlayerInitialAttributes()
     {
-        $playerAttributesObject        = new PlayerInitialAttributes($this->player->playerPotential, $this->position);
+        $playerAttributesObject        = new PlayerInitialAttributes($this->player->playerPotential, $this->generatedPosition, $this->playerPotential);
         $this->playerInitialAttributes = $playerAttributesObject->getAllAttributeValues();
 
         foreach ($this->playerInitialAttributes as $key => $value) {
@@ -103,7 +116,7 @@ class PlayerCreate
      */
     private function setPlayerPositionList()
     {
-        foreach (PlayerPosition::setInitialPositionsBasedOnAttributes($this->playerInitialAttributes) as $alias => $positionGrade) {
+        foreach ( $this->playerPosition->getInitialPositionsBasedOnAttributes($this->playerInitialAttributes) as $alias => $positionGrade) {
             $this->player->playerPositions[$alias] = $positionGrade;
         }
     }

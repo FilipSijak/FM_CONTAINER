@@ -6,7 +6,7 @@ namespace Services\PlayerService\PlayerConfig;
  * Highest valued attributes for each position
 */
 
-class PlayerPosition
+class PlayerPositionConfig
 {
     const POSITION_TECH_ATTRIBUTES = [
         'CB'  => [
