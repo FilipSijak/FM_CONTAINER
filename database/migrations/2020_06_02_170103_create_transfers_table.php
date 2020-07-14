@@ -19,7 +19,6 @@ class CreateTransfersTable extends Migration
             $table->integer('club_source');
             $table->integer('club_target');
             $table->integer('transfer_type')->default(1);
-            $table->integer('offer_start');
             $table->date('offer_start');
             $table->date('offer_end');
             $table->integer('status')->default(1);

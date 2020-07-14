@@ -17,6 +17,7 @@ use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
 use Services\CompetitionService\CompetitionService;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PlayerService\Interfaces\PlayerServiceInterface;
+use Services\PlayerService\PlayerService;
 
 class CreateGame implements CreateGameInterface
 {
@@ -59,9 +60,34 @@ class CreateGame implements CreateGameInterface
     }
 
     /**
-     * @return $this
+     *
+     *
+     * @return void
      */
     public function startNewGame()
+    {
+        $playerService    = new PlayerService();
+        $seasonFactory    = new SeasonFactory();
+        $baseClubs        = new \App\Models\Game\BaseClubs();
+        $baseCountries    = new \App\Models\Game\BaseCountries();
+        $baseCompetitions = new \App\Models\Game\BaseCompetitions();
+        $baseCities       = new \App\Models\Game\BaseCities();
+        $baseStadium      = new \App\Models\Game\BaseStadium();
+
+        $gameInitialDataSeed = new \Services\GameService\GameData\GameInitialDataSeed(
+            $baseClubs, $baseCountries, $baseCompetitions, $baseCities, $baseStadium
+        );
+
+        $this->storeGame()
+            ->populateFromBaseTables($gameInitialDataSeed)
+            ->setAllClubs()
+            ->assignPlayersToClubs($playerService)
+            ->assignBalancesToClubs()
+            ->assignSeasonToGame($seasonFactory)
+            ->assignCompetitionsToSeason();
+    }
+
+    private function storeGame()
     {
         $gameFactory = new GameFactory();
 
@@ -72,7 +98,7 @@ class CreateGame implements CreateGameInterface
         return $this;
     }
 
-    public function populateFromBaseTables(GameInitialDataSeedInterface $gameInitialDataSeed)
+    private function populateFromBaseTables(GameInitialDataSeedInterface $gameInitialDataSeed)
     {
         $gameInitialDataSeed->seedFromBaseTables($this->gameId);
 
@@ -82,7 +108,7 @@ class CreateGame implements CreateGameInterface
     /**
      * @return $this
      */
-    public function setAllClubs()
+    private function setAllClubs()
     {
         $this->clubs = Club::all();
 
@@ -106,7 +132,7 @@ class CreateGame implements CreateGameInterface
      *
      * @return $this
      */
-    public function assignPlayersToClubs(PlayerServiceInterface $playerService)
+    private function assignPlayersToClubs(PlayerServiceInterface $playerService)
     {
         $initialPlayerCreation = new InitialClubPeoplePotential();
         $playerFactory         = new PlayerFactory();
@@ -130,7 +156,7 @@ class CreateGame implements CreateGameInterface
     /**
      * @return $this
      */
-    public function assignBalancesToClubs()
+    private function assignBalancesToClubs()
     {
         $balanceFactory = new BalanceFactory();
 
@@ -146,7 +172,7 @@ class CreateGame implements CreateGameInterface
      *
      * @return $this
      */
-    public function assignSeasonToGame(SeasonFactory $seasonFactory)
+    private function assignSeasonToGame(SeasonFactory $seasonFactory)
     {
         $this->season = $seasonFactory->make($this->gameId);
 
@@ -155,7 +181,7 @@ class CreateGame implements CreateGameInterface
         return $this;
     }
 
-    public function assignCompetitionsToSeason()
+    private function assignCompetitionsToSeason()
     {
         $competitions          = Competition::all();
         $competitionRepository = new CompetitionRepository();
