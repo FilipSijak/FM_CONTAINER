@@ -1,5 +1,7 @@
 <?php
 
+use App\Factories\Competition\SeasonFactory;
+use App\GameEngine\GameCreation\CreateGame;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -28,5 +30,13 @@ class DatabaseSeeder extends Seeder
 
         $path = 'database/positions.sql';
         DB::unprepared(file_get_contents($path));
+
+        if (env('APP_ENV') == 'local') {
+            $gameInstance = new CreateGame(
+                1
+            );
+
+            $gameInstance->startNewGame();
+        }
     }
 }

@@ -57,23 +57,17 @@ class GameController extends Controller
      * GameController constructor.
      *
      * @param GameRepositoryInterface      $gameRepository
-     * @param GameInitialDataSeedInterface $gameInitialDataSeed
-     * @param PlayerService                $playerService
      * @param SeasonRepositoryInterface    $seasonRepository
      * @param GameContainerInterface       $gameContainer
      * @param NewsRepositoryInterface      $newsRepository
      */
     public function __construct(
         GameRepositoryInterface $gameRepository,
-        GameInitialDataSeedInterface $gameInitialDataSeed,
-        PlayerService $playerService,
         SeasonRepositoryInterface $seasonRepository,
         GameContainerInterface $gameContainer,
         NewsRepositoryInterface $newsRepository
     ) {
         $this->gameRepository      = $gameRepository;
-        $this->gameInitialDataSeed = $gameInitialDataSeed;
-        $this->playerService       = $playerService;
         $this->seasonRepository    = $seasonRepository;
         $this->gameContainer       = $gameContainer;
         $this->newsRepository      = $newsRepository;
@@ -110,15 +104,7 @@ class GameController extends Controller
             $request->post('user_id')
         );
 
-        $seasonFactory = new SeasonFactory();
-
-        $this->createGameInstance->startNewGame()
-                                 ->populateFromBaseTables($this->gameInitialDataSeed)
-                                 ->setAllClubs()
-                                 ->assignPlayersToClubs($this->playerService)
-                                 ->assignBalancesToClubs()
-                                 ->assignSeasonToGame($seasonFactory)
-                                 ->assignCompetitionsToSeason();
+        $this->createGameInstance->startNewGame();
     }
 
     /**

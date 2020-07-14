@@ -32,7 +32,7 @@ INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALU
 INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Selhurst Park', 'GBR', 1, 26309);
 INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Seward Stadium', 'GBR', 33, 10700);
 INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('St James Park', 'GBR', 27, 52387);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('St Mary\'s Stadium', 'GBR', 22, 32689);
+INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ("St Mary's Stadium", 'GBR', 22, 32689);
 INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Stadium of Light', 'GBR', 28, 49000);
 INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Stamford Bridge', 'GBR', 1, 41837);
 INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('The Galpharm Stadium', 'GBR', 42, 24500);
@@ -45,3 +45,4 @@ INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALU
 INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Villa Park', 'GBR', 2, 42788);
 INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Wembley', 'GBR', 1, 90000);
 INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('White Hart Lane', 'GBR', 1, 36230);
+
