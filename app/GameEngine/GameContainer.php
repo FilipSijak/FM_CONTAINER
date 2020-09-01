@@ -39,7 +39,7 @@ class GameContainer implements GameContainerInterface
     public function __construct()
     {
         $this->newsService           = new NewsService();
-        $this->transferService       = new TransferService();
+        //$this->transferService       = new TransferService();
         $this->matchService          = new MatchService();
         $this->competitionRepository = new CompetitionRepository();
     }
@@ -59,7 +59,7 @@ class GameContainer implements GameContainerInterface
 
 
         // check transfers (transfer rumors, transfer proposals, transfer deals, contracts etc.)
-        $this->transferService->processTransferBids();
+        //$this->transferService->processTransferBids();
 
         // check matches (any matches today? cant move forward if matches for the day are not played)
         $matches = $this->competitionRepository->getScheduledGamesForCompetition($this->game, 1);

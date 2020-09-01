@@ -2,8 +2,6 @@
 
 namespace Services\CompetitionService\League;
 
-use Illuminate\Database\Eloquent\Collection;
-
 class League
 {
     protected $clubs;
@@ -16,12 +14,17 @@ class League
 
     protected $numberOfGamesInRound;
 
-    public function __construct(Collection $clubs)
+    public function __construct($clubs)
     {
-        $this->clubs                = $clubs;
+        $this->clubs = [];
+
+        foreach ($clubs as $club) {
+            $this->clubs[] = (object)$club;
+        }
+
         $this->competitionSize      = count($clubs);
         $this->numberOfGamesInRound = $this->competitionSize / 2;
-        $this->fixed                = !empty($clubs->first()) ? $clubs->first()->id : 0;
+        $this->fixed                = !empty($this->clubs) ? $this->clubs[0]->id : 0;
     }
 
     /**
@@ -46,6 +49,8 @@ class League
         for ($i = 0; $i < $this->competitionSize - 2; $i++) {
             $this->generateSingleRoundGames();
         }
+
+        $this->swapTeamsForRematch();
 
         return $this->games;
     }
@@ -104,5 +109,23 @@ class League
         }
 
         return $this->games = array_merge($this->games, $localGames);
+    }
+
+    /**
+     * @return array
+     */
+    private function swapTeamsForRematch()
+    {
+        $rematchGames = [];
+
+        foreach ($this->games as $game) {
+            $rematch             = new \stdClass();
+            $rematch->homeTeamId = $game->awayTeamId;
+            $rematch->awayTeamId = $game->homeTeamId;
+
+            $rematchGames[] = $rematch;
+        }
+
+        return $this->games = array_merge($this->games, $rematchGames);
     }
 }
