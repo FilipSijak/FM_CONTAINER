@@ -190,7 +190,7 @@ class CreateGame implements CreateGameInterface
         foreach ($competitions as $competition) {
 
             $clubsByCompetition = $competitionRepository->getBaseClubsByCompetition($competition);
-            $competitionService = new CompetitionService($clubsByCompetition);
+            $competitionService = new CompetitionService($clubsByCompetition->toArray());
             $leagueFixtures     = $competitionService->makeLeague();
 
             $this->populateLeagueFixtures($leagueFixtures, $competition->id);

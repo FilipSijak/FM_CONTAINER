@@ -49,6 +49,8 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
      * @param BaseClubs        $baseClubs
      * @param BaseCountries    $baseCountries
      * @param BaseCompetitions $baseCompetitions
+     * @param BaseCities       $baseCities
+     * @param BaseStadium      $baseStadium
      */
     public function __construct
     (

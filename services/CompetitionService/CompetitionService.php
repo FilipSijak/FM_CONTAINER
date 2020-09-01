@@ -2,23 +2,22 @@
 
 namespace Services\CompetitionService;
 
-use Illuminate\Database\Eloquent\Collection;
 use Services\CompetitionService\Interfaces\CompetitionServiceInterface;
 use Services\CompetitionService\League\League;
 
 class CompetitionService implements CompetitionServiceInterface
 {
     /**
-     * @var Collection
+     * @var array
      */
     protected $clubs;
 
     /**
      * CompetitionService constructor.
      *
-     * @param Collection $clubs
+     * @param array $clubs
      */
-    public function __construct(Collection $clubs)
+    public function __construct(array $clubs)
     {
         $this->clubs = $clubs;
     }
