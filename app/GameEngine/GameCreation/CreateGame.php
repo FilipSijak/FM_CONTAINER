@@ -60,8 +60,6 @@ class CreateGame implements CreateGameInterface
     }
 
     /**
-     *
-     *
      * @return void
      */
     public function startNewGame()
