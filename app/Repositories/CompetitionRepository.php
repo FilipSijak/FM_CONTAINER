@@ -6,26 +6,137 @@ use App\Models\Competition\Competition;
 use App\Models\Competition\Match;
 use App\Models\Game\BaseClubs;
 use App\Models\Game\Game;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class CompetitionRepository
 {
-    public function __construct()
-    {
-
-    }
-
+    /**
+     * @param Competition $competition
+     *
+     * @return BaseClubs[]|Collection
+     */
     public function getBaseClubsByCompetition(Competition $competition)
     {
         return BaseClubs::all()->where('competition_id', $competition->id);
     }
 
+    /**
+     * Gets all the scheduled games for all competitions which need to be simulated
+     *
+     * @param Game $game
+     *
+     * @return mixed
+     */
     public function getScheduledGames(Game $game)
     {
-        return Match::where('match_start', $game->game_date)->get();
+        return Match::where('match_start', $game->game_date)->where('winner', null)->get();
     }
 
-    public function getScheduledGamesForCompetition(Game $game, int $competitionId)
+    /**
+     * @param string $date
+     * @param int    $competitionId
+     *
+     * @return mixed
+     */
+    public function getScheduledGamesForCompetition(string $date, int $competitionId)
     {
-        return Match::where('match_start', $game->game_date)->where('competition_id', $competitionId)->get();
+        return Match::where('match_start', $date)->where('competition_id', $competitionId)->get();
+    }
+
+    /**
+     * Gets match for the game date' filtered match for a game player to be played in a full match mode
+     *
+     * @param Game $game
+     *
+     * @return array
+     */
+    public function getUserGameIdForTheCurrentDay(Game $game)
+    {
+        $result = DB::select(
+            "
+            SELECT
+                m.id
+            FROM games AS g
+            INNER JOIN matches AS m ON (g.id = m.game_id)
+            WHERE g.user_id = :user_id
+            AND g.club_id = :club_id
+            AND g.id = :game_id
+            AND m.match_start = :game_date
+            AND (m.hometeam_id = :home_team OR m.awayteam_id = :away_team)
+            ",
+            [
+                'game_id'   => $game->id,
+                'club_id'   => $game->club_id,
+                'user_id'   => $game->user_id,
+                'game_date' => $game->game_date,
+                'home_team' => $game->club_id,
+                'away_team' => $game->club_id,
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Takes a collection of matches and returns club names and stadium for them
+     * It's being used for displaying a specified round of matches
+     *
+     *
+     * @param Collection $matches
+     *
+     * @return array
+     */
+    public function getMatchListMetaData(Collection $matches): array
+    {
+        $matchListData       = [];
+        $parsedMatchListData = [];
+
+        foreach ($matches as $match) {
+            $matchListData[] = $this->matchMetaData($match);
+        }
+
+        foreach ($matchListData as $data) {
+            $obj = new \stdClass();
+
+            $obj->stadiumName = $data[0]->stadium_name;
+            $obj->homeTeam    = $data[0]->name;
+            $obj->awayTeam    = $data[1]->name;
+
+            $parsedMatchListData[] = (array)$obj;
+        }
+
+        return $parsedMatchListData;
+    }
+
+    /**
+     * @param Match $match
+     *
+     * @return array
+     */
+    public function matchMetaData(Match $match)
+    {
+        $result = DB::select(
+            "
+            SELECT
+                s.name AS stadium_name,
+                c.name
+            FROM (
+                SELECT
+                    name,
+                    stadium_id
+                FROM clubs
+                WHERE (id = :homeTeam OR id = :awayTeam)
+            ) AS c
+            INNER JOIN stadiums AS s ON (s.id = :stadiumId)
+            ",
+            [
+                'homeTeam'  => $match->hometeam_id,
+                'awayTeam'  => $match->awayteam_id,
+                'stadiumId' => $match->stadium_id,
+            ]
+        );
+
+        return $result;
     }
 }

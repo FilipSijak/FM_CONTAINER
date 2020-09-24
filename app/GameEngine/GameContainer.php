@@ -3,10 +3,12 @@
 namespace App\GameEngine;
 
 use App\GameEngine\Interfaces\GameContainerInterface;
+use App\Models\Competition\Match;
 use App\Models\Game\Game;
 use App\Models\Game\News;
 use App\Repositories\CompetitionRepository;
 use Carbon\Carbon;
+use Nexmo\Response;
 use Services\MatchService\MatchService;
 use Services\NewsService\NewsService;
 use Services\TransferService\TransferService;
@@ -53,19 +55,13 @@ class GameContainer implements GameContainerInterface
 
     public function currentNews()
     {
-        // check news
         $news = $this->newsService->getNews();
         $this->storeNews($news);
+    }
 
-
-        // check transfers (transfer rumors, transfer proposals, transfer deals, contracts etc.)
-        //$this->transferService->processTransferBids();
-
-        // check matches (any matches today? cant move forward if matches for the day are not played)
-        $matches = $this->competitionRepository->getScheduledGamesForCompetition($this->game, 1);
-
-
-        //return all the resources
+    public function currentDateMatches()
+    {
+        return $this->competitionRepository->getScheduledGamesForCompetition($this->game->game_date, 1);
     }
 
     private function storeNews($news)
@@ -90,12 +86,29 @@ class GameContainer implements GameContainerInterface
 
         // every month update player value, attributes, club ranking
 
+        // simulates only the games that are not user played and that are not already simulated while user was playing
+        $this->simulateGames();
+
         // update state (update game date)
-        $this->game->game_date = Carbon::parse($this->game->game_date)->addDay();
+        $this->game->game_date = Carbon::parse($this->game->game_date)->addDay()->format('Y-m-d');
+
+        $this->game->save();
     }
 
-    //POST
-    public function simulateGames()
+    public function userMatch()
+    {
+        $matchId = $this->competitionRepository->getUserGameIdForTheCurrentDay($this->game);
+
+        if ($matchId) {
+            $match = Match::where('id', $matchId)->firstOrFail();
+
+            return $match;
+        }
+
+        return false;
+    }
+
+    protected function simulateGames()
     {
         $matches = $this->competitionRepository->getScheduledGames($this->game);
 

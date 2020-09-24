@@ -74,6 +74,8 @@ class GameController extends Controller
     }
 
     /**
+     * Return options for base countries, competitions, clubs
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function index()
@@ -120,6 +122,18 @@ class GameController extends Controller
         $this->newsRepository->getCurrentNews();
 
         //return NewsResource::collection(News::where('game_id', 1)->get());
+    }
+
+    public function currentDay(Game $game)
+    {
+        // read current news
+
+        // check if user has a match
+    }
+
+    public function matchDay(Game $game)
+    {
+        $match = $this->gameContainer->setGame($game)->userMatch();
     }
 
     /**

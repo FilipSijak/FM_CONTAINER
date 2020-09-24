@@ -2,6 +2,7 @@
 
 namespace App\Factories\Competition;
 
+use App\Models\Club\Club;
 use App\Models\Competition\Match;
 use Carbon\Carbon;
 
@@ -28,7 +29,7 @@ class MatchFactory
         $match->competition_id = $competitionId;
         $match->hometeam_id    = $homeTeamId;
         $match->awayteam_id    = $awayTeamId;
-        $match->stadium_id     = 0;
+        $match->stadium_id     = Club::all()->where('id', $homeTeamId)->first()->stadium_id;
         $match->attendance     = 0;
         $match->match_start    = $matchStart;
 
