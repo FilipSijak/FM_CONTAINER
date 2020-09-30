@@ -2,31 +2,17 @@
 
 namespace App\Http\Controllers\Game;
 
-use App\Factories\Competition\SeasonFactory;
-use App\GameEngine\GameCreation\CreateGame;
 use App\GameEngine\Interfaces\GameContainerInterface;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Game\GameCreateRequest;
-use App\Http\Resources\Club\ClubResource;
-use App\Http\Resources\Game\GameResource;
-use App\Models\Game\BaseClubs;
-use App\Models\Game\BaseCompetitions;
-use App\Models\Game\BaseCountries;
+use App\Http\Controllers\CoreController;
 use App\Models\Game\Game;
-use App\Repositories\Interfaces\GameRepositoryInterface;
 use App\Repositories\Interfaces\NewsRepositoryInterface;
 use App\Repositories\Interfaces\SeasonRepositoryInterface;
 use Illuminate\Http\Request;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PlayerService\PlayerService;
 
-class GameController extends Controller
+class GameController extends CoreController
 {
-    /**
-     * @var GameRepositoryInterface
-     */
-    protected $gameRepository;
-
     /**
      * @var GameInitialDataSeedInterface
      */
@@ -42,8 +28,6 @@ class GameController extends Controller
      */
     protected $seasonRepository;
 
-    protected $createGameInstance;
-
     /**
      * @var GameContainerInterface
      */
@@ -56,57 +40,23 @@ class GameController extends Controller
     /**
      * GameController constructor.
      *
-     * @param GameRepositoryInterface      $gameRepository
-     * @param SeasonRepositoryInterface    $seasonRepository
-     * @param GameContainerInterface       $gameContainer
-     * @param NewsRepositoryInterface      $newsRepository
+     * @param Request                   $request
+     * @param $
+     * @param SeasonRepositoryInterface $seasonRepository
+     * @param GameContainerInterface    $gameContainer
+     * @param NewsRepositoryInterface   $newsRepository
      */
     public function __construct(
-        GameRepositoryInterface $gameRepository,
+        Request $request,
         SeasonRepositoryInterface $seasonRepository,
         GameContainerInterface $gameContainer,
         NewsRepositoryInterface $newsRepository
     ) {
-        $this->gameRepository      = $gameRepository;
+        parent::__construct($request);
+
         $this->seasonRepository    = $seasonRepository;
         $this->gameContainer       = $gameContainer;
         $this->newsRepository      = $newsRepository;
-    }
-
-    /**
-     * Return options for base countries, competitions, clubs
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index()
-    {
-        return response()->json($this->gameRepository->getBaseData());
-    }
-
-    /**
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection
-     */
-    public function loadGame()
-    {
-        $games = Game::all()->where('user_id', 1);
-
-        if ($games->count()) {
-            return GameResource::collection($games);
-        }
-
-        return response()->json(['data' => []]);
-    }
-
-    /**
-     * @param GameCreateRequest $request
-     */
-    public function store(GameCreateRequest $request)
-    {
-        $this->createGameInstance = new CreateGame(
-            $request->post('user_id')
-        );
-
-        $this->createGameInstance->startNewGame();
     }
 
     /**
@@ -114,9 +64,9 @@ class GameController extends Controller
      *
      * @param Game $game
      */
-    public function news(Game $game)
+    public function news()
     {
-        $this->gameContainer->setGame($game)->currentNews();
+        $this->gameContainer->setGame($this->game)->currentNews();
 
         //get news
         $this->newsRepository->getCurrentNews();
@@ -124,16 +74,16 @@ class GameController extends Controller
         //return NewsResource::collection(News::where('game_id', 1)->get());
     }
 
-    public function currentDay(Game $game)
+    public function currentDay()
     {
-        // read current news
+        // @TODO read current news
 
-        // check if user has a match
+        // @TODO check if user has a match
     }
 
-    public function matchDay(Game $game)
+    public function matchDay()
     {
-        $match = $this->gameContainer->setGame($game)->userMatch();
+        $match = $this->gameContainer->setGame($this->game)->userMatch();
     }
 
     /**
@@ -141,34 +91,10 @@ class GameController extends Controller
      *
      * @param Game $game
      */
-    public function nextDay(Game $game)
+    public function nextDay()
     {
         // @TODO check if all the games were simulated to proceed
 
-        $this->gameContainer->setGame($game)->moveForward();
-    }
-
-    /**
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getCountriesAndCompetitions()
-    {
-        $countries = BaseCountries::all();
-
-        $countries->map(function ($country) {
-            $country->competitions = $competitions = BaseCompetitions::all()->where('country_code', $country->code);
-        });
-
-        return response()->json(['data' => $countries]);
-    }
-
-    /**
-     * @param Request $request
-     *
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
-     */
-    public function getClubsByCompetition(Request $request)
-    {
-        return ClubResource::collection(BaseClubs::all()->where('competition_id', $request->get('competition_id')));
+        $this->gameContainer->setGame($this->game)->moveForward();
     }
 }

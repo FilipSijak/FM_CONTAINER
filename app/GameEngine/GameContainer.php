@@ -8,7 +8,6 @@ use App\Models\Game\Game;
 use App\Models\Game\News;
 use App\Repositories\CompetitionRepository;
 use Carbon\Carbon;
-use Nexmo\Response;
 use Services\MatchService\MatchService;
 use Services\NewsService\NewsService;
 use Services\TransferService\TransferService;
