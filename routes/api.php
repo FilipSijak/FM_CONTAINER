@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Controllers\Game\GameController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Game\GameSetupController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,19 +15,28 @@ use Illuminate\Http\Request;
 |
 */
 
-/*Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});*/
+Route::group(
+    [
+        'prefix' => 'setup',
+    ],
+    function () {
+        Route::get('/', [GameSetupController::class, 'index']);
+        Route::get('/load', [GameSetupController::class, 'loadGame']);
+        Route::get('/countries/competitions', [GameSetupController::class, 'countriesAndCompetitions']);
+        Route::get('/competitions/{id}/clubs', [GameSetupController::class, 'clubsByCompetition']);
+        Route::post('/store', [GameSetupController::class, 'store']);
+    }
+);
 
-Route::group(['prefix' => 'games', 'as' => 'game.'], function () {
-    Route::get('/', 'Game\GameController@index');
-    Route::get('/{game}', 'Game\GameController@index');
-    Route::get('/load', 'Game\GameController@loadGame');
-    Route::get('/countries/competitions', 'Game\GameController@getCountriesAndCompetitions');
-    Route::get('/competitions/clubs', 'Game\GameController@getClubsByCompetition');
-    Route::get('/{game}/news', [GameController::class, 'news']);
-    Route::patch('/{game}/next-day', [GameController::class, 'nextDay']);
-    Route::post('/store', 'Game\GameController@store')->name('store');
-});
+Route::group(
+    [
+        'prefix' => 'game',
+        'middleware' => 'gameId'
+    ],
+    function () {
+        Route::get('/news', [GameController::class, 'news']);
+        Route::patch('/next-day', [GameController::class, 'nextDay']);
+    }
+);
 
 Route::get('/test', 'TestController@index');

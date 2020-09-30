@@ -2,8 +2,10 @@
 
 namespace App\Exceptions;
 
+use App\Exceptions\Game\GameIdException;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
 
 class Handler extends ExceptionHandler
 {
@@ -29,8 +31,10 @@ class Handler extends ExceptionHandler
     /**
      * Report or log an exception.
      *
-     * @param  \Exception  $exception
+     * @param \Exception $exception
+     *
      * @return void
+     * @throws Exception
      */
     public function report(Exception $exception)
     {
@@ -40,12 +44,17 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $exception
-     * @return \Illuminate\Http\Response
+     * @param            $request
+     * @param \Exception $exception
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function render($request, Exception $exception)
     {
+        if ($exception instanceof GameIdException) {
+            return response()->json(['error' => 'Missing Game ID'], 422);
+        }
+
         return parent::render($request, $exception);
     }
 }
