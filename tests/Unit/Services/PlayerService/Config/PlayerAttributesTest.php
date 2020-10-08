@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services\PlayerService\Config;
 
-use Services\PlayerService\PlayerConfig\PlayerPositionConfig;
+use Services\PeopleService\PlayerConfig\PlayerPositionConfig;
 use Tests\TestCase;
 
 class PlayerAttributesTest extends TestCase

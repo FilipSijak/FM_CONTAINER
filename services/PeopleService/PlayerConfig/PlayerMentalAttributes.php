@@ -1,6 +1,6 @@
 <?php
 
-namespace Services\PlayerService\PlayerConfig;
+namespace Services\PeopleService\PlayerConfig;
 
 /*
  * Player mental attributes

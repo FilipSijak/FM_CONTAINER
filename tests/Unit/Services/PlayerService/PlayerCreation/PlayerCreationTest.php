@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\Services\PlayerService\PlayerCreation;
 
-use Services\PlayerService\PlayerCreation\PlayerCreate;
+use Services\PeopleService\Regens\GeneratePlayer;
 use Tests\TestCase;
 
 class PlayerCreationTest extends TestCase
 {
     /**
-     * @var PlayerCreate
+     * @var GeneratePlayer
      */
     public $playerCreate;
 
@@ -18,7 +18,7 @@ class PlayerCreationTest extends TestCase
     {
         parent::setUp();
 
-        $this->playerCreate = new PlayerCreate(150);
+        $this->playerCreate = new GeneratePlayer(150);
         $this->player = $this->playerCreate->makePlayer();
     }
 

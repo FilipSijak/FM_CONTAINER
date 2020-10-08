@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Services\PlayerService\PlayerCreation;
 
-use Services\PlayerService\PlayerCreation\PlayerInitialAttributes;
-use Services\PlayerService\PlayerPotential\PlayerPotential;
+use Services\PeopleService\Regens\PlayerInitialAttributes;
+use Services\PeopleService\PlayerPotential\PlayerPotential;
 use Tests\TestCase;
 
 class PlayerInitialAttributesTest extends TestCase
