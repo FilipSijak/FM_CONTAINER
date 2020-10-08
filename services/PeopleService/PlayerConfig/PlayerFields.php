@@ -1,6 +1,6 @@
 <?php
 
-namespace Services\PlayerService\PlayerConfig;
+namespace Services\PeopleService\PlayerConfig;
 
 /*
  * All the attributes that players can have divided in groups

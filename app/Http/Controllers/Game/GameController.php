@@ -9,7 +9,7 @@ use App\Repositories\Interfaces\NewsRepositoryInterface;
 use App\Repositories\Interfaces\SeasonRepositoryInterface;
 use Illuminate\Http\Request;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
-use Services\PlayerService\PlayerService;
+use Services\PeopleService\PeopleService;
 
 class GameController extends CoreController
 {
@@ -19,7 +19,7 @@ class GameController extends CoreController
     protected $gameInitialDataSeed;
 
     /**
-     * @var PlayerService
+     * @var PeopleService
      */
     protected $playerService;
 

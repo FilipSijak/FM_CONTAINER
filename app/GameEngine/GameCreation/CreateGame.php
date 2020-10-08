@@ -7,17 +7,24 @@ use App\Factories\Competition\MatchFactory;
 use App\Factories\Competition\PointsFactory;
 use App\Factories\Competition\SeasonFactory;
 use App\Factories\Game\GameFactory;
-use App\Factories\Player\PlayerFactory;
 use App\GameEngine\Interfaces\CreateGameInterface;
 use App\Models\Club\Club;
 use App\Models\Competition\Competition;
+use App\Models\Game\BaseCities;
+use App\Models\Game\BaseClubs;
+use App\Models\Game\BaseCompetitions;
+use App\Models\Game\BaseCountries;
+use App\Models\Game\BaseStadium;
 use App\Repositories\CompetitionRepository;
 use Carbon\Carbon;
 use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
 use Services\CompetitionService\CompetitionService;
+use Services\GameService\GameData\GameInitialDataSeed;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
-use Services\PlayerService\Interfaces\PlayerServiceInterface;
-use Services\PlayerService\PlayerService;
+use Services\PeopleService\Interfaces\PeopleServiceInterface;
+use Services\PeopleService\PersonCreate\Player;
+use Services\PeopleService\PeopleService;
+use Services\PeopleService\PersonTypes;
 
 class CreateGame implements CreateGameInterface
 {
@@ -64,22 +71,22 @@ class CreateGame implements CreateGameInterface
      */
     public function startNewGame()
     {
-        $playerService    = new PlayerService();
+        $peopleService    = new PeopleService();
         $seasonFactory    = new SeasonFactory();
-        $baseClubs        = new \App\Models\Game\BaseClubs();
-        $baseCountries    = new \App\Models\Game\BaseCountries();
-        $baseCompetitions = new \App\Models\Game\BaseCompetitions();
-        $baseCities       = new \App\Models\Game\BaseCities();
-        $baseStadium      = new \App\Models\Game\BaseStadium();
+        $baseClubs        = new BaseClubs();
+        $baseCountries    = new BaseCountries();
+        $baseCompetitions = new BaseCompetitions();
+        $baseCities       = new BaseCities();
+        $baseStadium      = new BaseStadium();
 
-        $gameInitialDataSeed = new \Services\GameService\GameData\GameInitialDataSeed(
+        $gameInitialDataSeed = new GameInitialDataSeed(
             $baseClubs, $baseCountries, $baseCompetitions, $baseCities, $baseStadium
         );
 
         $this->storeGame()
             ->populateFromBaseTables($gameInitialDataSeed)
             ->setAllClubs()
-            ->assignPlayersToClubs($playerService)
+            ->assignPlayersToClubs($peopleService)
             ->assignBalancesToClubs()
             ->assignSeasonToGame($seasonFactory)
             ->assignCompetitionsToSeason();
@@ -126,29 +133,33 @@ class CreateGame implements CreateGameInterface
     }
 
     /**
-     * @param PlayerServiceInterface $playerService
+     * @param PeopleServiceInterface $peopleService
      *
      * @return $this
      */
-    private function assignPlayersToClubs(PlayerServiceInterface $playerService)
+    private function assignPlayersToClubs(PeopleServiceInterface $peopleService)
     {
-        $initialPlayerCreation = new InitialClubPeoplePotential();
-        $playerFactory         = new PlayerFactory();
+        $clubPeoplePotential = new InitialClubPeoplePotential();
 
         foreach ($this->clubs as $club) {
-            $playerPotentialList = $initialPlayerCreation->getPlayerPotentialListByClubRank($club->rank);
+            $playerPotentialList = $clubPeoplePotential->getPlayerPotentialListByClubRank($club->rank);
 
             foreach ($playerPotentialList as $playerPotential) {
-                // returns generated player profile based on potential
-                $servicePlayer = $playerService->setPlayerPotential($playerPotential)->createPlayer();
-                // storing that player in database
-                $player = $playerFactory->make($servicePlayer, $this->gameId);
+                $player = $peopleService->setPersonConfiguration($playerPotential, $this->gameId, PersonTypes::PLAYER)
+                                        ->createPerson();
 
                 $player->clubs()->attach($club->id);
             }
         }
 
         return $this;
+    }
+
+    private function assignClubStaff()
+    {
+        foreach ($this->clubs as $club) {
+
+        }
     }
 
     /**

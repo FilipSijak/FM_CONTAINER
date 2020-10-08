@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services\PlayerService\PlayerPotential;
 
-use Services\PlayerService\PlayerPotential\PlayerPotential;
+use Services\PeopleService\PlayerPotential\PlayerPotential;
 use Tests\TestCase;
 
 class PlayerPotentialTest extends TestCase

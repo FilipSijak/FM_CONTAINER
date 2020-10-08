@@ -1,8 +1,8 @@
 <?php
 
-namespace Services\PlayerService\PlayerPosition;
+namespace Services\PeopleService\PlayerPosition;
 
-use Services\PlayerService\PlayerConfig\PlayerPositionConfig as PositionConfig;
+use Services\PeopleService\PlayerConfig\PlayerPositionConfig as PositionConfig;
 
 /**
  * Class PlayerPosition

@@ -1,10 +1,10 @@
 <?php
 
-namespace Services\PlayerService\PlayerCreation;
+namespace Services\PeopleService\Regens\PlayerRegen;
 
 use Faker\Factory;
-use Services\PlayerService\PlayerPosition\PlayerPosition;
-use Services\PlayerService\PlayerPotential\PlayerPotential;
+use Services\PeopleService\PlayerPosition\PlayerPosition;
+use Services\PeopleService\PlayerPotential\PlayerPotential;
 use stdClass;
 
 /**
@@ -12,7 +12,7 @@ use stdClass;
  *
  * @package Services\PlayerService\PlayerCreation
  */
-class PlayerCreate
+class GeneratePlayer
 {
     /**
      * @var stdClass

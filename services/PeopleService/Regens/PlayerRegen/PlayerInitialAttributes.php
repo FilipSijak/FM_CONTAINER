@@ -1,10 +1,10 @@
 <?php
 
-namespace Services\PlayerService\PlayerCreation;
+namespace Services\PeopleService\Regens\PlayerRegen;
 
-use Services\PlayerService\PlayerConfig\PlayerFields;
-use Services\PlayerService\PlayerConfig\PlayerPositionConfig;
-use Services\PlayerService\PlayerPotential\PlayerPotential;
+use Services\PeopleService\PlayerConfig\PlayerFields;
+use Services\PeopleService\PlayerConfig\PlayerPositionConfig;
+use Services\PeopleService\PlayerPotential\PlayerPotential;
 
 /**
  * Class PlayerInitialAttributes

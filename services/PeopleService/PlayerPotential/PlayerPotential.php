@@ -1,6 +1,6 @@
 <?php
 
-namespace Services\PlayerService\PlayerPotential;
+namespace Services\PeopleService\PlayerPotential;
 
 class PlayerPotential
 {
