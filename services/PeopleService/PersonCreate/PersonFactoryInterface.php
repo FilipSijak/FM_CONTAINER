@@ -3,7 +3,7 @@
 namespace Services\PeopleService\PersonCreate;
 
 use App\Models\Player\Player;
-use App\People\Staff;
+use App\Models\People\Staff;
 
 interface PersonFactoryInterface
 {

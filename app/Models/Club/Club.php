@@ -2,6 +2,7 @@
 
 namespace App\Models\Club;
 
+use App\Models\People\Staff;
 use Illuminate\Database\Eloquent\Model;
 
 class Club extends Model
@@ -24,5 +25,10 @@ class Club extends Model
     public function balance()
     {
         return $this->hasOne(Balance::class);
+    }
+
+    public function staff()
+    {
+        return $this->belongsToMany(Staff::class, 'staff_club');
     }
 }

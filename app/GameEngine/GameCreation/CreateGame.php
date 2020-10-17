@@ -22,7 +22,6 @@ use Services\CompetitionService\CompetitionService;
 use Services\GameService\GameData\GameInitialDataSeed;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PeopleService\Interfaces\PeopleServiceInterface;
-use Services\PeopleService\PersonCreate\Player;
 use Services\PeopleService\PeopleService;
 use Services\PeopleService\PersonTypes;
 
@@ -87,6 +86,7 @@ class CreateGame implements CreateGameInterface
             ->populateFromBaseTables($gameInitialDataSeed)
             ->setAllClubs()
             ->assignPlayersToClubs($peopleService)
+            ->assignClubStaff($peopleService)
             ->assignBalancesToClubs()
             ->assignSeasonToGame($seasonFactory)
             ->assignCompetitionsToSeason();
@@ -155,11 +155,23 @@ class CreateGame implements CreateGameInterface
         return $this;
     }
 
-    private function assignClubStaff()
+    /**
+     * Assign 1 manager, 5 scouts and 5 coaches for every club
+     *
+     * @param PeopleServiceInterface $peopleService
+     *
+     * @return CreateGame
+     */
+    private function assignClubStaff(PeopleServiceInterface $peopleService)
     {
         foreach ($this->clubs as $club) {
+            $manager =  $peopleService->setPersonConfiguration($club->rank, $this->gameId, PersonTypes::MANAGER)
+                                      ->createPerson();
 
+            $manager->clubs()->attach($club->id);
         }
+
+        return $this;
     }
 
     /**
@@ -235,7 +247,7 @@ class CreateGame implements CreateGameInterface
                 $competitionId,
                 $fixture->homeTeamId,
                 $fixture->awayTeamId,
-                $nextWeek ? $seasonStart->addWeek(1) : $seasonStart
+                $nextWeek ? $seasonStart->addWeek() : $seasonStart
             );
 
             $countRound++;
