@@ -2,11 +2,9 @@
 
 namespace Services\PeopleService;
 
-use App\Models\Player\Player;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Services\PeopleService\Interfaces\PeopleServiceInterface;
 use Services\PeopleService\PersonCreate\PersonFactory;
-use Services\PeopleService\PersonCreate\Tyes\Player as PlayerType;
 use Services\PeopleService\Regens\PlayerRegen\GeneratePlayer;
 use Services\PeopleService\Regens\StaffRegen\GenerateManager;
 

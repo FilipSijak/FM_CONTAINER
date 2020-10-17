@@ -2,9 +2,10 @@
 
 namespace Services\PeopleService\PersonCreate;
 
-use App\People\Staff as StaffModel;
+use App\Models\People\Staff as StaffModel;
 use Services\PeopleService\PersonCreate\Types\Player;
 use App\Models\Player\Player as PlayerModel;
+use Services\PeopleService\PersonCreate\Types\Staff;
 use Services\PeopleService\PersonTypes;
 
 
@@ -44,9 +45,9 @@ class PersonFactory implements PersonFactoryInterface
 
     public function createManager(): StaffModel
     {
-        $manager = new StaffModel();
-        $manager->type = 1;
+        $manager = new Staff();
 
-        return $manager;
+        return $manager->create($this->attributes, $this->gameId, PersonTypes::MANAGER);
+
     }
 }

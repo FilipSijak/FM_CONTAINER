@@ -29,7 +29,10 @@ class PlayerInitialAttributes
         $this->playerPotentialByCategory = $playerPotentialByCategory;
     }
 
-    public function getAllAttributeValues()
+    /**
+     * @return array
+     */
+    public function getAllAttributeValues(): array
     {
         $this->setMainAttributes();
 
