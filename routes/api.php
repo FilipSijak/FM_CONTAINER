@@ -17,6 +17,21 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(
     [
+        'prefix' => 'auth'
+
+    ],
+    function () {
+        Route::post('login', 'AuthController@login');
+        Route::post('register', 'AuthController@register');
+        Route::post('logout', 'AuthController@logout');
+        Route::post('refresh', 'AuthController@refresh');
+        Route::get('user-profile', 'AuthController@userProfile');
+    }
+);
+
+Route::group(
+    [
+        'middleware' => 'auth:api',
         'prefix' => 'setup',
     ],
     function () {
@@ -31,7 +46,7 @@ Route::group(
 Route::group(
     [
         'prefix' => 'game',
-        'middleware' => 'gameId'
+        'middleware' => ['jwt.verify', 'gameId']
     ],
     function () {
         Route::get('/news', [GameController::class, 'news']);
