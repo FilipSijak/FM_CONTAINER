@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use App\Exceptions\Game\GameHashException;
 use App\Exceptions\Game\GameIdException;
+use App\Exceptions\Game\UnallowedGameException;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
@@ -52,7 +54,15 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
         if ($exception instanceof GameIdException) {
-            return response()->json(['error' => 'Missing Game ID'], 422);
+            return response()->json(['error' => 'Invalid game'], 422);
+        }
+
+        if ($exception instanceof GameHashException) {
+            return response()->json(['error' => 'Invalid game identifier'], 422);
+        }
+
+        if ($exception instanceof UnallowedGameException) {
+            return response()->json(['error' => 'Accessing missing or unallowed game'], 422);
         }
 
         return parent::render($request, $exception);
