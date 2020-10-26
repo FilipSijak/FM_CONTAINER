@@ -74,93 +74,89 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
      */
     public function seedFromBaseTables(int $gameId)
     {
-        if (Stadium::all()->count() === 0) {
-            foreach ($this->baseStadium::all() as $baseStadium) {
-                $stadium = new StadiumFactory(
+
+        foreach ($this->baseStadium::all() as $baseStadium) {
+            try {
+                new StadiumFactory(
                     $baseStadium->name,
                     $gameId,
                     $baseStadium->country_code,
                     $baseStadium->city_id,
                     $baseStadium->capacity
                 );
+            } catch (\Exception $exception) {
+                echo $exception->getMessage();
+            }
+
+        }
+
+        foreach ($this->baseCountries::all() as $baseCountry) {
+            try {
+                $country = new Country();
+
+                $country->code       = $baseCountry->code;
+                $country->name       = $baseCountry->name;
+                $country->game_id    = $gameId;
+                $country->ranking    = $baseCountry->ranking;
+                $country->population = $baseCountry->population;
+                $country->gdp        = $baseCountry->gdp;
+                $country->gdpcapita  = $baseCountry->gdpcapita;
+                $country->continent  = $baseCountry->continent;
+
+                $country->save();
+            } catch (\Exception $exception) {
+                echo $exception->getMessage();
             }
         }
 
-        if (Country::all()->count() === 0) {
-            foreach ($this->baseCountries::all() as $baseCountry) {
-                try {
-                    $country = new Country();
+        foreach ($this->baseCompetitions::all() as $baseCompetition) {
+            try {
+                $competition = new Competition();
 
-                    $country->code       = $baseCountry->code;
-                    $country->name       = $baseCountry->name;
-                    $country->game_id    = $gameId;
-                    $country->ranking    = $baseCountry->ranking;
-                    $country->population = $baseCountry->population;
-                    $country->gdp        = $baseCountry->gdp;
-                    $country->gdpcapita  = $baseCountry->gdpcapita;
-                    $country->continent  = $baseCountry->continent;
+                $competition->name         = $baseCompetition->name;
+                $competition->country_code = $baseCompetition->country_code;
+                $competition->game_id      = $gameId;
+                $competition->rank         = $baseCompetition->rank;
+                $competition->type         = $baseCompetition->type;
 
-                    $country->save();
-                } catch (\Exception $exception) {
-                    echo $exception->getMessage();
-                }
+
+                $competition->save();
+            } catch (\Exception $exception) {
+                echo $exception->getMessage();
             }
         }
 
-        if (Competition::all()->count() === 0) {
-            foreach ($this->baseCompetitions::all() as $baseCompetition) {
-                try {
-                    $competition = new Competition();
+        foreach ($this->baseClubs::all() as $baseClub) {
+            try {
+                $club = new Club();
 
-                    $competition->name         = $baseCompetition->name;
-                    $competition->country_code = $baseCompetition->country_code;
-                    $competition->game_id      = $gameId;
-                    $competition->rank         = $baseCompetition->rank;
-                    $competition->type         = $baseCompetition->type;
+                $club->name          = $baseClub->name;
+                $club->game_id       = $gameId;
+                $club->country_code  = $baseClub->country_code;
+                $club->city_id       = $baseClub->city_id;
+                $club->stadium_id    = $baseClub->stadium_id;
+                $club->rank          = $baseClub->rank;
+                $club->rank_academy  = $baseClub->rank_academy;
+                $club->rank_training = $baseClub->rank_training;
 
-
-                    $competition->save();
-                } catch (\Exception $exception) {
-                    echo $exception->getMessage();
-                }
+                $club->save();
+            } catch (\Exception $exception) {
+                echo $exception->getMessage();
             }
         }
 
-        if (Club::all()->count() === 0) {
-            foreach ($this->baseClubs::all() as $baseClub) {
-                try {
-                    $club = new Club();
+        foreach ($this->baseCities::all() as $baseCity) {
+            try {
+                $city = new City();
 
-                    $club->name          = $baseClub->name;
-                    $club->game_id       = $gameId;
-                    $club->country_code  = $baseClub->country_code;
-                    $club->city_id       = $baseClub->city_id;
-                    $club->stadium_id    = $baseClub->stadium_id;
-                    $club->rank          = $baseClub->rank;
-                    $club->rank_academy  = $baseClub->rank_academy;
-                    $club->rank_training = $baseClub->rank_training;
+                $city->name         = $baseCity->name;
+                $city->game_id      = $gameId;
+                $city->country_code = $baseCity->country_code;
+                $city->population   = $baseCity->population;
 
-                    $club->save();
-                } catch (\Exception $exception) {
-                    echo $exception->getMessage();
-                }
-            }
-        }
-
-        if (City::all()->count() === 0) {
-            foreach ($this->baseCities::all() as $baseCity) {
-                try {
-                    $city = new City();
-
-                    $city->name         = $baseCity->name;
-                    $city->game_id      = $gameId;
-                    $city->country_code = $baseCity->country_code;
-                    $city->population   = $baseCity->population;
-
-                    $city->save();
-                } catch (\Exception $exception) {
-                    echo $exception->getMessage();
-                }
+                $city->save();
+            } catch (\Exception $exception) {
+                echo $exception->getMessage();
             }
         }
     }

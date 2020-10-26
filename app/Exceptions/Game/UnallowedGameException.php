@@ -5,10 +5,10 @@ namespace App\Exceptions\Game;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
-class GameIdException extends Exception
+class UnallowedGameException extends Exception
 {
     public function report()
     {
-        Log::debug('Invalid game');
+        Log::debug('Accessing wrong or unallowed game');
     }
 }
