@@ -5,15 +5,15 @@ namespace Services\PeopleService;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Services\PeopleService\Interfaces\PeopleServiceInterface;
 use Services\PeopleService\PersonCreate\PersonFactory;
-use Services\PeopleService\Regens\PlayerRegen\GeneratePlayer;
-use Services\PeopleService\Regens\StaffRegen\GenerateManager;
+use Services\PeopleService\Regens\PlayerRegen\GeneratePlayerAttributes;
+use Services\PeopleService\Regens\StaffRegen\GenerateManagerAttributes;
 
 class PeopleService implements PeopleServiceInterface
 {
     /**
      * @var int
      */
-    private   $gameId;
+    private $gameId;
 
     /**
      * @var int
@@ -35,8 +35,8 @@ class PeopleService implements PeopleServiceInterface
     public function setPersonConfiguration(int $personPotential, int $gameId, int $personType)
     {
         $this->personPotential = $personPotential;
-        $this->gameId = $gameId;
-        $this->personType = $personType;
+        $this->gameId          = $gameId;
+        $this->personType      = $personType;
 
         return $this;
     }
@@ -44,20 +44,22 @@ class PeopleService implements PeopleServiceInterface
     /**
      * @return EloquentModel
      */
-    public function createPerson(): EloquentModel
+    public function createPerson(): ?EloquentModel
     {
         $personFactory = new PersonFactory($this->gameId);
-        $person = null;
+        $person        = null;
 
         switch ($this->personType) {
             case PersonTypes::PLAYER:
-                $player = new GeneratePlayer($this->personPotential);
-                $person = $personFactory->setAttributes($player->makePlayer())->createPlayer();
+                $player              = new GeneratePlayerAttributes($this->personPotential, PersonTypes::PLAYER);
+                $generatedAttributes = $player->generateAttributes();
+                $person              = $personFactory->setAttributes($generatedAttributes)->createPlayer();
 
                 break;
             case PersonTypes::MANAGER:
-                $manager = new GenerateManager($this->personPotential);
-                $person  = $personFactory->setAttributes($manager->makeManager())->createManager();
+                $manager             = new GenerateManagerAttributes($this->personPotential, PersonTypes::MANAGER);
+                $generatedAttributes = $manager->generateAttributes();
+                $person              = $personFactory->setAttributes($generatedAttributes)->createManager();
 
                 break;
         }

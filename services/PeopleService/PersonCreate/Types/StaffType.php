@@ -5,7 +5,7 @@ namespace Services\PeopleService\PersonCreate\Types;
 use App\Models\People\Staff as StaffModel;
 use stdClass;
 
-class Staff
+class StaffType
 {
     public function create(stdClass $generatedPersonAttributes, int $gameId, int $personType)
     {

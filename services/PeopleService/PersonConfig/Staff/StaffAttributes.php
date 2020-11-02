@@ -23,4 +23,6 @@ class StaffAttributes
     public const GOALKEEPING = [
         'distribution', 'handling', 'shot_stopping'
     ];
+
+    public const STAFF_CATEGORIES = ['coaching', 'mental', 'goalkeeping', 'knowledge'];
 }
