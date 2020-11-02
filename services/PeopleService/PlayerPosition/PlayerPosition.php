@@ -2,7 +2,7 @@
 
 namespace Services\PeopleService\PlayerPosition;
 
-use Services\PeopleService\PlayerConfig\PlayerPositionConfig as PositionConfig;
+use Services\PeopleService\PersonConfig\Player\PlayerPositionConfig;
 
 /**
  * Class PlayerPosition
@@ -13,7 +13,7 @@ class PlayerPosition
 {
     public function getRandomPosition()
     {
-        return PositionConfig::getRandomPosition();
+        return PlayerPositionConfig::getRandomPosition();
     }
 
     /**
@@ -26,17 +26,17 @@ class PlayerPosition
      */
     public function getInitialPositionsBasedOnAttributes($attributesValues): array
     {
-        $positionList               = PositionConfig::PLAYER_POSITIONS;
+        $positionList               = PlayerPositionConfig::PLAYER_POSITIONS;
         $positionListMainAttributes = [];
 
         foreach ($positionList as $position) {
             $positionListMainAttributes[$position] = array_merge(
-                PositionConfig::POSITION_TECH_ATTRIBUTES[$position]['primary'],
-                PositionConfig::POSITION_TECH_ATTRIBUTES[$position]['secondary'],
-                PositionConfig::POSITION_MENTAL_ATTRIBUTES[$position]['primary'],
-                PositionConfig::POSITION_MENTAL_ATTRIBUTES[$position]['secondary'],
-                PositionConfig::POSITION_PHYSICAL_ATTRIBUTES[$position]['primary'],
-                PositionConfig::POSITION_PHYSICAL_ATTRIBUTES[$position]['secondary']
+                PlayerPositionConfig::POSITION_TECH_ATTRIBUTES[$position]['primary'],
+                PlayerPositionConfig::POSITION_TECH_ATTRIBUTES[$position]['secondary'],
+                PlayerPositionConfig::POSITION_MENTAL_ATTRIBUTES[$position]['primary'],
+                PlayerPositionConfig::POSITION_MENTAL_ATTRIBUTES[$position]['secondary'],
+                PlayerPositionConfig::POSITION_PHYSICAL_ATTRIBUTES[$position]['primary'],
+                PlayerPositionConfig::POSITION_PHYSICAL_ATTRIBUTES[$position]['secondary']
             );
         }
 
@@ -49,7 +49,7 @@ class PlayerPosition
      *
      * @return array
      */
-    public function getAverageGradeByPosition(array $positionsWithMainAttributes, array $playerAttributeValues): array
+    private function getAverageGradeByPosition(array $positionsWithMainAttributes, array $playerAttributeValues): array
     {
         $averageGradeForPosition = [];
 

@@ -6,7 +6,7 @@ use App\Models\Player\Player as PlayerModel;
 use App\Models\Player\Position;
 use stdClass;
 
-class Player
+class PlayerType
 {
     /**
      * @param stdClass $playerService
@@ -19,7 +19,7 @@ class Player
         $player = new PlayerModel();
 
         foreach ($playerService as $field => $value) {
-            if ($field == 'playerPotential' || $field == 'playerPositions') {
+            if ($field == 'potentialByCategory' || $field == 'playerPositions') {
                 continue;
             }
 
@@ -27,6 +27,7 @@ class Player
         }
 
         $player->game_id = $gameId;
+
         $player->save();
 
         foreach ($playerService->playerPositions as $alias => $grade) {

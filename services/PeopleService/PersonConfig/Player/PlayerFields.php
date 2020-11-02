@@ -1,6 +1,6 @@
 <?php
 
-namespace Services\PeopleService\PlayerConfig;
+namespace Services\PeopleService\PersonConfig\Player;
 
 /*
  * All the attributes that players can have divided in groups
@@ -19,4 +19,6 @@ class PlayerFields
     const PHYSICAL_FILDS = [
         'acceleration', 'agility', 'balance', 'jumping', 'natural_fitness', 'pace', 'stamina', 'strength',
     ];
+
+    const PERSON_ATTRIBUTE_CATEGORIES = ['technical', 'mental', 'physical'];
 }

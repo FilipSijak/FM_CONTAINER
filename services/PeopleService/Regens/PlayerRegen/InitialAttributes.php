@@ -2,18 +2,17 @@
 
 namespace Services\PeopleService\Regens\PlayerRegen;
 
-use Services\PeopleService\PlayerConfig\PlayerFields;
-use Services\PeopleService\PlayerConfig\PlayerPositionConfig;
-use Services\PeopleService\PlayerPotential\PlayerPotential;
+use Services\PeopleService\PersonConfig\Player\PlayerFields;
+use Services\PeopleService\PersonConfig\Player\PlayerPositionConfig;
+use Services\PeopleService\PersonPotential\PersonPotential;
 
 /**
  * Class PlayerInitialAttributes
  *
  * @package Services\PlayerService\PlayerCreation
  */
-class PlayerInitialAttributes
+class InitialAttributes
 {
-    protected $playerPotential;
     protected $playerPosition;
     protected $playerAllAttributes = [];
     protected $commonAttributes    = ['stamina', 'acceleration', 'strength'];
@@ -21,12 +20,12 @@ class PlayerInitialAttributes
 
     public function __construct(
         array $playerPotentialByCategory,
-        string $playerPosition,
-        PlayerPotential $playerPotential
+        string $playerPosition
     ) {
-        $this->playerPotential           = $playerPotential;
         $this->playerPosition            = $playerPosition;
         $this->playerPotentialByCategory = $playerPotentialByCategory;
+
+        $this->setAttributes();
     }
 
     /**
@@ -34,12 +33,10 @@ class PlayerInitialAttributes
      */
     public function getAllAttributeValues(): array
     {
-        $this->setMainAttributes();
-
         return $this->playerAllAttributes;
     }
 
-    protected function setMainAttributes()
+    protected function setAttributes()
     {
         $mainAttributes = PlayerPositionConfig::getPositionMainAttributes($this->playerPosition);
 
@@ -52,13 +49,14 @@ class PlayerInitialAttributes
 
     /**
      * This will set attributes for a specific category (e.g. technical)
+     * Goes through each primary attribute and gives it a random value from a higher range
      *
-     * @param array  $attributes
+     * @param array  $primaryAttributes
      * @param string $attributesCategory
      */
-    protected function setPrimaryAttributes(array $attributes, string $attributesCategory)
+    protected function setPrimaryAttributes(array $primaryAttributes, string $attributesCategory)
     {
-        foreach ($attributes as $attribute) {
+        foreach ($primaryAttributes as $attribute) {
             $this->playerAllAttributes[$attribute] = (int)round(
                 rand($this->playerPotentialByCategory[$attributesCategory] - 15,
                      $this->playerPotentialByCategory[$attributesCategory]
@@ -102,16 +100,20 @@ class PlayerInitialAttributes
 
         foreach ($allAbilityAttributes as $field) {
             foreach ($attributeCategories as $category) {
-                // checking the object if the attribute was already set for primary or secondary value
+                // checks the object if the attribute was already set for primary or secondary value
                 if (!isset($this->playerAllAttributes[$field])) {
-
-                    $minimumAttributeValue = $this->setMinimumAttributeValue($this->playerPotentialByCategory[$category]);
+                    $potentialForCategory  = $this->playerPotentialByCategory[$category];
+                    $minimumAttributeValue = $this->setMinimumAttributeValue($potentialForCategory);
 
                     if (isset($this->commonAttributes[$field])) {
                         $minimumAttributeValue = $minimumAttributeValue + 3;
                     }
 
-                    $this->playerAllAttributes[$field] = (int)round(rand(9, $this->playerPotentialByCategory[$category] / 10));
+                    /*
+                     * After getting a minimal value for an attribute, the value is used as a starting point for rand
+                     * Example: Player with min value of 5 can end up with anything between 5 and $potentialForCategory
+                     */
+                    $this->playerAllAttributes[$field] = (int)round(rand($minimumAttributeValue, $potentialForCategory / 10));
                 }
             }
         }
@@ -122,9 +124,9 @@ class PlayerInitialAttributes
      *
      * @return int
      */
-    protected function setMinimumAttributeValue(int $playerPotential)
+    protected function setMinimumAttributeValue(int $playerPotential): int
     {
-        $potentialDescription = $this->playerPotential->playerPotentialLabel($playerPotential);
+        $potentialDescription = PersonPotential::playerPotentialLabel($playerPotential);
 
         $potentialMinimumAttributesRanges = [
             'amateur'      => 3,

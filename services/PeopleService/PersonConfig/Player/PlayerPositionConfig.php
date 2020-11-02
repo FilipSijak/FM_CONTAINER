@@ -1,6 +1,6 @@
 <?php
 
-namespace Services\PeopleService\PlayerConfig;
+namespace Services\PeopleService\PersonConfig\Player;
 
 /*
  * Highest valued attributes for each position
