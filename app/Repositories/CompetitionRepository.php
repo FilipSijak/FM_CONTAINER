@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Club\Club;
 use App\Models\Competition\Competition;
 use App\Models\Competition\Match;
 use App\Models\Game\BaseClubs;
@@ -12,13 +13,26 @@ use Illuminate\Support\Facades\DB;
 class CompetitionRepository
 {
     /**
-     * @param Competition $competition
+     * @param int $competitionId
      *
      * @return BaseClubs[]|Collection
      */
-    public function getBaseClubsByCompetition(Competition $competition)
+    public function getBaseClubsByCompetition(int $competitionId)
     {
-        return BaseClubs::all()->where('competition_id', $competition->id);
+        return BaseClubs::all()->where('competition_id', $competitionId);
+    }
+
+    public function getInitialTournamentTeamsBasedOnRanks(Competition $competition)
+    {
+        /**
+         * @TODO
+         *
+         * This will currently take 20 clubs from the PL because those are the only one created
+         * After more clubs are added to the database, only 32 of the best clubs will be added to the CL
+         * for initial season. After first season, clubs will be selected based on their performance
+         */
+
+        return Club::where('game_id', 1)->take(16)->get();
     }
 
     /**
@@ -45,7 +59,7 @@ class CompetitionRepository
     }
 
     /**
-     * Gets match for the game date' filtered match for a game player to be played in a full match mode
+     * Gets match for the game date filtered match for a game player to be played in a full match mode
      *
      * @param Game $game
      *

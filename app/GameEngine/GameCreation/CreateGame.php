@@ -83,51 +83,183 @@ class CreateGame implements CreateGameInterface
         );
 
         $this->storeGame()
-            ->populateFromBaseTables($gameInitialDataSeed)
-            ->setAllClubs()
-            ->assignPlayersToClubs($peopleService)
-            ->assignClubStaff($peopleService)
-            ->assignBalancesToClubs()
-            ->assignSeasonToGame($seasonFactory)
-            ->assignCompetitionsToSeason();
-    }
-
-    private function storeGame()
-    {
-        $gameFactory = new GameFactory();
-
-        $this->newGame = $gameFactory->setNewGame($this->userId);
-
-        $this->gameId = $this->newGame->id;
-
-        return $this;
-    }
-
-    private function populateFromBaseTables(GameInitialDataSeedInterface $gameInitialDataSeed)
-    {
-        $gameInitialDataSeed->seedFromBaseTables($this->gameId);
-
-        return $this;
+             ->populateFromBaseTables($gameInitialDataSeed)
+             ->setAllClubs()
+             ->assignPlayersToClubs($peopleService)
+             ->assignClubStaff($peopleService)
+             ->assignBalancesToClubs()
+             ->assignSeasonToGame($seasonFactory)
+             ->assignCompetitionsToSeason();
     }
 
     /**
      * @return $this
      */
-    private function setAllClubs()
+    private function assignCompetitionsToSeason()
     {
-        $this->clubs = Club::all();
+        $competitions = Competition::all();
+
+        foreach ($competitions as $competition) {
+            if ($competition->type == 'league') {
+                $this->setLeagueCompetition($competition);
+            } else {
+                $this->setTournamentCompetition($competition);
+            }
+        }
 
         return $this;
     }
 
     /**
-     * @param int $clubId
+     * @param Competition $competition
+     */
+    private function setLeagueCompetition(Competition $competition)
+    {
+        $pointsFactory         = new PointsFactory();
+        $competitionRepository = new CompetitionRepository();
+
+        $clubsByCompetition = $competitionRepository->getBaseClubsByCompetition($competition->id);
+        $competitionService = new CompetitionService($clubsByCompetition->toArray());
+        $leagueFixtures     = $competitionService->makeLeague();
+
+        $this->populateLeagueFixtures($leagueFixtures, $competition->id);
+
+        foreach ($clubsByCompetition as $club) {
+            $competition->seasons()->attach(
+                $this->season->id,
+                [
+                    'game_id' => $this->gameId,
+                    'club_id' => $club->id
+                ]
+            );
+
+            $pointsFactory->make(
+                $club->id,
+                $this->gameId,
+                $competition->id,
+                $this->season->id
+            );
+        }
+    }
+
+    /**
+     * @param Competition $competition
+     */
+    private function setTournamentCompetition(Competition $competition)
+    {
+        $competitionRepository = new CompetitionRepository();
+        $clubsByCompetition = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition);
+        $competitionService = new CompetitionService($clubsByCompetition->toArray());
+        $tournament         = $competitionService->makeTournament();
+
+        $this->populateTournamentFixtures($tournament, $competition->id);
+    }
+
+    /**
+     * @param array $leagueFixtures
+     * @param       $competitionId
+     */
+    private function populateLeagueFixtures(array $leagueFixtures, $competitionId)
+    {
+        $matchFactory          = new MatchFactory();
+        $seasonStart           = $this->firstSeasonFirstRoundStartDate::parse()->modify("next Sunday")->copy();
+        $competitionRepository = new CompetitionRepository();
+        $clubsByCompetition    = $competitionRepository->getBaseClubsByCompetition($competitionId);
+        $countRound            = count($clubsByCompetition) / 2;
+
+        foreach ($leagueFixtures as $fixture) {
+            $nextWeek = $countRound % 10 == 0;
+
+            $matchFactory->make(
+                $this->gameId,
+                $competitionId,
+                $fixture->homeTeamId,
+                $fixture->awayTeamId,
+                $nextWeek ? $seasonStart->addWeek() : $seasonStart
+            );
+
+            $countRound++;
+        }
+    }
+
+    /**
+     * @param array $tournament
+     * @param       $competitionId
+     */
+    public function populateTournamentFixtures(array $tournament, $competitionId)
+    {
+        $matchFactory = new MatchFactory();
+        $seasonStart  = $this->firstSeasonFirstRoundStartDate::parse()->modify("next Tuesday");
+        $firstGame    = $seasonStart->copy();
+        $secondGame   = $seasonStart->copy()->addWeek();
+
+        $firstRoundPairs = array_merge(
+            $tournament["first_group"]["rounds"][1]["pairs"],
+            $tournament["second_group"]["rounds"][1]["pairs"]
+        );
+
+        foreach ($firstRoundPairs as $pair) {
+            $matchFactory->make(
+                $this->gameId,
+                $competitionId,
+                $pair->match1->homeTeamId,
+                $pair->match1->awayTeamId,
+                $firstGame
+            );
+
+            $matchFactory->make(
+                $this->gameId,
+                $competitionId,
+                $pair->match2->homeTeamId,
+                $pair->match2->awayTeamId,
+                $secondGame
+            );
+        }
+    }
+
+    /**
+     * @param SeasonFactory $seasonFactory
      *
      * @return $this
      */
-    public function setClub(int $clubId)
+    private function assignSeasonToGame(SeasonFactory $seasonFactory)
     {
-        $this->clubId = $clubId;
+        $this->season = $seasonFactory->make($this->gameId);
+
+        $this->season->save();
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    private function assignBalancesToClubs()
+    {
+        $balanceFactory = new BalanceFactory();
+
+        foreach ($this->clubs as $club) {
+            $balanceFactory->make($club, $this->gameId);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Assign 1 manager, 5 scouts and 5 coaches for every club
+     *
+     * @param PeopleServiceInterface $peopleService
+     *
+     * @return CreateGame
+     */
+    private function assignClubStaff(PeopleServiceInterface $peopleService)
+    {
+        foreach ($this->clubs as $club) {
+            $manager = $peopleService->setPersonConfiguration($club->rank, $this->gameId, PersonTypes::MANAGER)
+                                     ->createPerson();
+
+            $manager->clubs()->attach($club->id);
+        }
 
         return $this;
     }
@@ -156,20 +288,23 @@ class CreateGame implements CreateGameInterface
     }
 
     /**
-     * Assign 1 manager, 5 scouts and 5 coaches for every club
-     *
-     * @param PeopleServiceInterface $peopleService
-     *
-     * @return CreateGame
+     * @return $this
      */
-    private function assignClubStaff(PeopleServiceInterface $peopleService)
+    private function setAllClubs()
     {
-        foreach ($this->clubs as $club) {
-            $manager =  $peopleService->setPersonConfiguration($club->rank, $this->gameId, PersonTypes::MANAGER)
-                                      ->createPerson();
+        $this->clubs = Club::all();
 
-            $manager->clubs()->attach($club->id);
-        }
+        return $this;
+    }
+
+    /**
+     * @param GameInitialDataSeedInterface $gameInitialDataSeed
+     *
+     * @return $this
+     */
+    private function populateFromBaseTables(GameInitialDataSeedInterface $gameInitialDataSeed)
+    {
+        $gameInitialDataSeed->seedFromBaseTables($this->gameId);
 
         return $this;
     }
@@ -177,80 +312,26 @@ class CreateGame implements CreateGameInterface
     /**
      * @return $this
      */
-    private function assignBalancesToClubs()
+    private function storeGame()
     {
-        $balanceFactory = new BalanceFactory();
+        $gameFactory = new GameFactory();
 
-        foreach ($this->clubs as $club) {
-            $balanceFactory->make($club, $this->gameId);
-        }
+        $this->newGame = $gameFactory->setNewGame($this->userId);
+
+        $this->gameId = $this->newGame->id;
 
         return $this;
     }
 
     /**
-     * @param SeasonFactory $seasonFactory
+     * @param int $clubId
      *
      * @return $this
      */
-    private function assignSeasonToGame(SeasonFactory $seasonFactory)
+    public function setClub(int $clubId)
     {
-        $this->season = $seasonFactory->make($this->gameId);
-
-        $this->season->save();
+        $this->clubId = $clubId;
 
         return $this;
-    }
-
-    private function assignCompetitionsToSeason()
-    {
-        $competitions          = Competition::all();
-        $competitionRepository = new CompetitionRepository();
-        $pointsFactory         = new PointsFactory();
-
-        foreach ($competitions as $competition) {
-
-            $clubsByCompetition = $competitionRepository->getBaseClubsByCompetition($competition);
-            $competitionService = new CompetitionService($clubsByCompetition->toArray());
-            $leagueFixtures     = $competitionService->makeLeague();
-
-            $this->populateLeagueFixtures($leagueFixtures, $competition->id);
-
-            foreach ($clubsByCompetition as $club) {
-                $competition->seasons()->attach($this->season->id, ['game_id' => $this->gameId, 'club_id' => $club->id]);
-
-                $pointsFactory->make(
-                    $club->id,
-                    $this->gameId,
-                    $competition->id,
-                    $this->season->id
-                );
-            }
-        }
-    }
-
-    /**
-     * @param array $leagueFixtures
-     * @param       $competitionId
-     */
-    private function populateLeagueFixtures(array $leagueFixtures, $competitionId)
-    {
-        $matchFactory = new MatchFactory();
-        $seasonStart  = $this->firstSeasonFirstRoundStartDate::parse()->modify("next Sunday");
-        $countRound   = count($this->clubs) / 2;
-
-        foreach ($leagueFixtures as $fixture) {
-            $nextWeek = $countRound % 10 == 0;
-
-            $matchFactory->make(
-                $this->gameId,
-                $competitionId,
-                $fixture->homeTeamId,
-                $fixture->awayTeamId,
-                $nextWeek ? $seasonStart->addWeek() : $seasonStart
-            );
-
-            $countRound++;
-        }
     }
 }

@@ -14,7 +14,7 @@ class League
 
     protected $numberOfGamesInRound;
 
-    public function __construct($clubs)
+    public function __construct(array $clubs)
     {
         $this->clubs = [];
 

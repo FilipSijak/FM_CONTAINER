@@ -4,6 +4,8 @@ namespace Services\CompetitionService;
 
 use Services\CompetitionService\Interfaces\CompetitionServiceInterface;
 use Services\CompetitionService\League\League;
+use Services\CompetitionService\Tournament\Tournament;
+use Illuminate\Database\Eloquent\Collection;
 
 class CompetitionService implements CompetitionServiceInterface
 {
@@ -31,6 +33,8 @@ class CompetitionService implements CompetitionServiceInterface
 
     public function makeTournament()
     {
-        // TODO: Implement makeTournament() method.
+        $tournament = new Tournament($this->clubs);
+
+        return $tournament->createTournament();
     }
 }
