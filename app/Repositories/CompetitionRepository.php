@@ -22,7 +22,7 @@ class CompetitionRepository
         return BaseClubs::all()->where('competition_id', $competitionId);
     }
 
-    public function getInitialTournamentTeamsBasedOnRanks(Competition $competition)
+    public function getInitialTournamentTeamsBasedOnRanks()
     {
         /**
          * @TODO

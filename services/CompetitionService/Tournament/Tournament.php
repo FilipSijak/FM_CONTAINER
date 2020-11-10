@@ -40,7 +40,7 @@ class Tournament
         }
 
         for ($i = 0, $k = $clubsCount - 1; $i < $halfSize; $i++, $k--) {
-            $pair =  new \stdClass();
+            $pair   = new \stdClass();
             $match1 = new \stdClass();
             $match2 = new \stdClass();
 
@@ -52,7 +52,7 @@ class Tournament
             $pair->match1 = $match1;
             $pair->match2 = $match2;
             $pair->winner = null;
-            $pair->loser = null;
+            $pair->loser  = null;
 
             if ($i < $groupRounds) {
                 $data["first_group"]["rounds"][1]["pairs"][] = $pair;

@@ -17,6 +17,7 @@ use App\Models\Game\BaseCountries;
 use App\Models\Game\BaseStadium;
 use App\Repositories\CompetitionRepository;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
 use Services\CompetitionService\CompetitionService;
 use Services\GameService\GameData\GameInitialDataSeed;
@@ -152,7 +153,11 @@ class CreateGame implements CreateGameInterface
         $competitionService = new CompetitionService($clubsByCompetition->toArray());
         $tournament         = $competitionService->makeTournament();
 
-        $this->populateTournamentFixtures($tournament, $competition->id);
+        if ($competition->groups) {
+            $this->populateTournamentGroups($competition->id);
+        } else {
+            $this->populateTournamentFixtures($tournament, $competition->id);
+        }
     }
 
     /**
@@ -179,6 +184,51 @@ class CreateGame implements CreateGameInterface
             );
 
             $countRound++;
+        }
+    }
+
+    /**
+     * @param int $competitionId
+     */
+    public function populateTournamentGroups(int $competitionId)
+    {
+        $competitionRepository = new CompetitionRepository();
+        $clubsByCompetition    = $competitionRepository->getInitialTournamentTeamsBasedOnRanks();
+        $counter = 0;
+        $currentGroup = '';
+
+        $groups = [
+            0 => 'A',
+            4 => 'B',
+            8 => 'C',
+            12 => 'D',
+            16 => 'E',
+            20 => 'F'
+        ];
+
+        for ($i = 0; $i < count($clubsByCompetition); $i++) {
+            if (isset($groups[$counter])) {
+                $currentGroup = $groups[$counter];
+            }
+
+            try {
+                DB::insert(
+                    "
+                    INSERT INTO tournament_groups (competition_id, groupIds, club_id, points)
+                    VALUES (:competitionId, :groupId, :clubId, :points)
+                    ",
+                    [
+                        'competitionId' => $competitionId,
+                        'groupId' => $currentGroup,
+                        'clubId' => $clubsByCompetition[$i]->id,
+                        'points' => 0
+                    ]
+                );
+            } catch (\Exception $e) {
+                // @TODO
+            }
+
+            $counter++;
         }
     }
 
