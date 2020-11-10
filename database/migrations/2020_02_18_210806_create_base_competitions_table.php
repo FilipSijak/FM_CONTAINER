@@ -19,6 +19,7 @@ class CreateBaseCompetitionsTable extends Migration
             $table->string('country_code');
             $table->integer('rank');
             $table->string('type');
+            $table->integer('groups');
         });
     }
 
