@@ -87,7 +87,6 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
             } catch (\Exception $exception) {
                 echo $exception->getMessage();
             }
-
         }
 
         foreach ($this->baseCountries::all() as $baseCountry) {
@@ -118,6 +117,7 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
                 $competition->game_id      = $gameId;
                 $competition->rank         = $baseCompetition->rank;
                 $competition->type         = $baseCompetition->type;
+                $competition->groups       = $baseCompetition->groups;
 
 
                 $competition->save();

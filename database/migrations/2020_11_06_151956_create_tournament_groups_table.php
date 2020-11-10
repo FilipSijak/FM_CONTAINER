@@ -16,7 +16,7 @@ class CreateTournamentGroupsTable extends Migration
         Schema::create('tournament_groups', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('competition_id');
-            $table->char('group');
+            $table->char('groupId');
             $table->integer('club_id');
             $table->integer('points');
         });

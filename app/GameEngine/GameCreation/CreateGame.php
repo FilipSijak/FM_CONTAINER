@@ -214,7 +214,7 @@ class CreateGame implements CreateGameInterface
             try {
                 DB::insert(
                     "
-                    INSERT INTO tournament_groups (competition_id, groupIds, club_id, points)
+                    INSERT INTO tournament_groups (competition_id, groupId, club_id, points)
                     VALUES (:competitionId, :groupId, :clubId, :points)
                     ",
                     [
@@ -265,6 +265,17 @@ class CreateGame implements CreateGameInterface
                 $secondGame
             );
         }
+
+        DB::insert(
+        "
+                INSERT INTO tournament_knockout (competition_id, summary)
+                VALUES (:competitionId, :summary)
+            ",
+            [
+                'competitionId' => $competitionId,
+                'summary' => json_encode($tournament)
+            ]
+        );
     }
 
     /**
