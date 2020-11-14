@@ -44,6 +44,10 @@ class CreateGame implements CreateGameInterface
      * @var Carbon|\DateTime|\DateTimeInterface
      */
     protected $firstSeasonFirstRoundStartDate;
+    /**
+     * @var CompetitionService
+     */
+    private $competitionService;
 
     /**
      * CreateGame constructor.
@@ -54,6 +58,7 @@ class CreateGame implements CreateGameInterface
     {
         $this->userId                         = $userId;
         $this->firstSeasonFirstRoundStartDate = Carbon::create((int)date("Y"), 8, 15);
+        $this->competitionService             = new CompetitionService();
 
         return $this;
     }
@@ -118,10 +123,8 @@ class CreateGame implements CreateGameInterface
     {
         $pointsFactory         = new PointsFactory();
         $competitionRepository = new CompetitionRepository();
-
-        $clubsByCompetition = $competitionRepository->getBaseClubsByCompetition($competition->id);
-        $competitionService = new CompetitionService($clubsByCompetition->toArray());
-        $leagueFixtures     = $competitionService->makeLeague();
+        $clubsByCompetition    = $competitionRepository->getBaseClubsByCompetition($competition->id);
+        $leagueFixtures        = $this->competitionService->setClubs($clubsByCompetition->toArray())->makeLeague();
 
         $this->populateLeagueFixtures($leagueFixtures, $competition->id);
 
@@ -130,7 +133,7 @@ class CreateGame implements CreateGameInterface
                 $this->season->id,
                 [
                     'game_id' => $this->gameId,
-                    'club_id' => $club->id
+                    'club_id' => $club->id,
                 ]
             );
 
@@ -140,23 +143,6 @@ class CreateGame implements CreateGameInterface
                 $competition->id,
                 $this->season->id
             );
-        }
-    }
-
-    /**
-     * @param Competition $competition
-     */
-    private function setTournamentCompetition(Competition $competition)
-    {
-        $competitionRepository = new CompetitionRepository();
-        $clubsByCompetition = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition);
-        $competitionService = new CompetitionService($clubsByCompetition->toArray());
-        $tournament         = $competitionService->makeTournament();
-
-        if ($competition->groups) {
-            $this->populateTournamentGroups($competition->id);
-        } else {
-            $this->populateTournamentFixtures($tournament, $competition->id);
         }
     }
 
@@ -188,22 +174,46 @@ class CreateGame implements CreateGameInterface
     }
 
     /**
+     * @param Competition $competition
+     */
+    public function setTournamentCompetition(Competition $competition)
+    {
+        $competitionRepository = new CompetitionRepository();
+        $clubsByCompetition    = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition);
+        $tournament            = $this->competitionService->setClubs($clubsByCompetition->toArray())->makeTournament();
+
+        if ($competition->groups) {
+            $this->populateTournamentGroups($competition->id);
+
+            $mappedTeams = $competitionRepository->getTeamsMappedByTournamentGroup($competition->id);
+
+            foreach ($mappedTeams as $group => $teams) {
+                $leagueFixtures = $this->competitionService->setClubs($teams)->makeLeague();
+
+                $this->populateLeagueFixtures($leagueFixtures, $competition->id);
+            }
+        } else {
+            $this->populateTournamentFixtures($tournament, $competition->id);
+        }
+    }
+
+    /**
      * @param int $competitionId
      */
     public function populateTournamentGroups(int $competitionId)
     {
         $competitionRepository = new CompetitionRepository();
         $clubsByCompetition    = $competitionRepository->getInitialTournamentTeamsBasedOnRanks();
-        $counter = 0;
-        $currentGroup = '';
+        $counter               = 0;
+        $currentGroup          = '';
 
         $groups = [
-            0 => 'A',
-            4 => 'B',
-            8 => 'C',
+            0  => 'A',
+            4  => 'B',
+            8  => 'C',
             12 => 'D',
             16 => 'E',
-            20 => 'F'
+            20 => 'F',
         ];
 
         for ($i = 0; $i < count($clubsByCompetition); $i++) {
@@ -219,9 +229,9 @@ class CreateGame implements CreateGameInterface
                     ",
                     [
                         'competitionId' => $competitionId,
-                        'groupId' => $currentGroup,
-                        'clubId' => $clubsByCompetition[$i]->id,
-                        'points' => 0
+                        'groupId'       => $currentGroup,
+                        'clubId'        => $clubsByCompetition[$i]->id,
+                        'points'        => 0,
                     ]
                 );
             } catch (\Exception $e) {
@@ -267,13 +277,13 @@ class CreateGame implements CreateGameInterface
         }
 
         DB::insert(
-        "
+            "
                 INSERT INTO tournament_knockout (competition_id, summary)
                 VALUES (:competitionId, :summary)
             ",
             [
                 'competitionId' => $competitionId,
-                'summary' => json_encode($tournament)
+                'summary'       => json_encode($tournament),
             ]
         );
     }
