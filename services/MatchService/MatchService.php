@@ -16,7 +16,8 @@ class MatchService implements MatchServiceInterface
         }
     }
 
-    private function simulateMatch(Match $match) {
+    private function simulateMatch(Match $match)
+    {
         // check if the match is for a view mode (club that is managed by person will have view mode)
 
         // else, dummy simulation for all the other games

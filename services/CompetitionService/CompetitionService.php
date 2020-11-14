@@ -2,10 +2,11 @@
 
 namespace Services\CompetitionService;
 
+
+use Services\CompetitionService\CompetitionUpdate\CompetitionUpdater;
 use Services\CompetitionService\Interfaces\CompetitionServiceInterface;
 use Services\CompetitionService\League\League;
 use Services\CompetitionService\Tournament\Tournament;
-use Illuminate\Database\Eloquent\Collection;
 
 class CompetitionService implements CompetitionServiceInterface
 {
@@ -14,14 +15,11 @@ class CompetitionService implements CompetitionServiceInterface
      */
     protected $clubs;
 
-    /**
-     * CompetitionService constructor.
-     *
-     * @param array $clubs
-     */
-    public function __construct(array $clubs)
+    public function setClubs(array $clubs)
     {
         $this->clubs = $clubs;
+
+        return $this;
     }
 
     public function makeLeague()
@@ -36,5 +34,13 @@ class CompetitionService implements CompetitionServiceInterface
         $tournament = new Tournament($this->clubs);
 
         return $tournament->createTournament();
+    }
+
+    public function competitionsRoundUpdate(array $matches)
+    {
+        $competitionUpdater = new CompetitionUpdater();
+
+        $competitionUpdater->setMatches($matches);
+        $competitionUpdater->distributeMatchesForCompetitionsUpdates();
     }
 }
