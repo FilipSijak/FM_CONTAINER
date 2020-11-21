@@ -259,7 +259,7 @@ class CreateGame implements CreateGameInterface
         );
 
         foreach ($firstRoundPairs as $pair) {
-            $matchFactory->make(
+            $match1 = $matchFactory->make(
                 $this->gameId,
                 $competitionId,
                 $pair->match1->homeTeamId,
@@ -267,13 +267,17 @@ class CreateGame implements CreateGameInterface
                 $firstGame
             );
 
-            $matchFactory->make(
+            $pair->match1Id = $match1->id;
+
+            $match2 = $matchFactory->make(
                 $this->gameId,
                 $competitionId,
                 $pair->match2->homeTeamId,
                 $pair->match2->awayTeamId,
                 $secondGame
             );
+
+            $pair->match2Id = $match2->id;
         }
 
         DB::insert(

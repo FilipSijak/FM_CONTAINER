@@ -45,7 +45,7 @@ Route::group(
 Route::group(
     [
         'prefix' => 'game',
-        'middleware' => ['jwt.verify', 'gameId']
+        //'middleware' => ['jwt.verify', 'gameId']
     ],
     function () {
         Route::get('/news', [GameController::class, 'news']);

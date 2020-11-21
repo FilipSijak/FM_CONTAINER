@@ -53,6 +53,8 @@ class Tournament
             $pair->match2 = $match2;
             $pair->winner = null;
             $pair->loser  = null;
+            $pair->match1Id = null;
+            $pair->match2Id = null;
 
             if ($i < $groupRounds) {
                 $data["first_group"]["rounds"][1]["pairs"][] = $pair;
