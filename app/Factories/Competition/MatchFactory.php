@@ -34,5 +34,7 @@ class MatchFactory
         $match->match_start    = $matchStart;
 
         $match->save();
+
+        return $match;
     }
 }

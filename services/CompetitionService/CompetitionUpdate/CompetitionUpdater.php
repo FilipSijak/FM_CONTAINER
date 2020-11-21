@@ -3,6 +3,7 @@
 namespace Services\CompetitionService\CompetitionUpdate;
 
 use App\Models\Competition\Competition;
+use Illuminate\Support\Facades\DB;
 
 class CompetitionUpdater
 {
@@ -31,11 +32,17 @@ class CompetitionUpdater
             } elseif ($competition->type == 'tournament') {
                 if ($competition->groups) {
 
-                    $tournamentUpdater->setMatches($matches)->updatePointsTable();
+                    //$tournamentUpdater->setMatches($matches)->updatePointsTable();
                     // update group tables
                     // if group tables are finished, update competition summary
                 } else {
-                    // update json summary
+                    // get all the matches for competition
+                    $matches = DB::select("SELECT * FROM matches WHERE competition_id = :competitionId and winner > 0"
+                    , ['competitionId' => $competitionId]);
+
+                    $matches = json_decode(json_encode($matches), true);
+
+                    $tournamentUpdater->setMatches($matches)->updateTournamentSummary();
                 }
 
             }

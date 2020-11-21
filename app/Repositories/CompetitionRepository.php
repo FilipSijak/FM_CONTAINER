@@ -8,6 +8,7 @@ use App\Models\Game\BaseClubs;
 use App\Models\Game\Game;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Services\MatchService\MatchService;
 
 class CompetitionRepository
 {
@@ -203,6 +204,9 @@ class CompetitionRepository
 
     public function tournamentGroupsFinished(array $match)
     {
+        // did each club play all the games
+
+        // how many groups tournament has
         $result = DB::select(
             "
                 SELECT
@@ -249,5 +253,90 @@ class CompetitionRepository
         }
 
         return $mappedTeams;
+    }
+
+    public function tournamentRoundWinner(int $matchId1, int $matchId2)
+    {
+        $match1 = Match::where('id', $matchId1)->first();
+        $match2 = Match::where('id', $matchId2)->first();
+
+        $team1 = new \stdClass();
+        $team2 = new \stdClass();
+
+        $team1->id = $match1->hometeam_id;
+        $team2->id = $match1->awayteam_id;
+        $team1->goals = $match1->home_team_goals;
+        $team2->goals = $match1->away_team_goals;
+        $team1->goals += $match2->away_team_goals;
+        $team2->goals += $match2->home_team_goals;
+        $team1->points = 0;
+        $team2->points = 0;
+
+        switch ($match1->winner) {
+            case 1:
+                $team1->points += 3;
+                break;
+            case 2:
+                $team2->points += 3;
+                break;
+            case 3:
+                $team1->points += 1;
+                $team2->points += 1;
+                break;
+        }
+
+        switch ($match2->winner) {
+            case 1:
+                $team2->points += 3;
+                break;
+            case 2:
+                $team1->points += 3;
+                break;
+            case 3:
+                $team1->points += 1;
+                $team2->points += 1;
+                break;
+        }
+
+        // same amount of points - checking goal difference or simulating extra time
+        if ($team1->points == $team2->points) {
+            if ($team1->goals == $team2->goals) {
+                $matchService = new MatchService();
+                return $matchService->simulateMatchExtraTime($match2->id);
+            } else {
+                return $team1->goals > $team2->goals ? $team1->id : $team2->id;
+            }
+        }
+
+        return $team1->points > $team2->points ? $team1->id : $team2->id;
+    }
+
+    /**
+     * @param int $competitionId
+     *
+     * @return array
+     */
+    public function tournamentKnockoutStageByCompetitionId(int $competitionId)
+    {
+        return DB::select(
+            "
+                SELECT * FROM tournament_knockout WHERE competition_id = :competitionId
+            ",
+            ['competitionId' => $competitionId]
+        );
+    }
+
+    public function updateKnockoutSummary(\stdClass $summary, int $tournamentStructureId)
+    {
+        try {
+            DB::update(
+                "
+                UPDATE tournament_knockout SET summary = :summary WHERE id = :id
+            ",
+                ['summary' => json_encode($summary), 'id' => $tournamentStructureId]
+            );
+        } catch (\Exception $e) {
+
+        }
     }
 }
