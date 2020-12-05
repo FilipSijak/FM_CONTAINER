@@ -36,6 +36,13 @@ class CompetitionService implements CompetitionServiceInterface
         return $tournament->createTournament();
     }
 
+    public function tournamentNewRound()
+    {
+        $tournament = new Tournament($this->clubs);
+
+        return $tournament->setNextRoundPairs($this->clubs);
+    }
+
     public function competitionsRoundUpdate(array $matches)
     {
         $competitionUpdater = new CompetitionUpdater();
