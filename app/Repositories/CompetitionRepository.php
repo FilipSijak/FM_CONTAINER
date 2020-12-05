@@ -258,7 +258,11 @@ class CompetitionRepository
     public function tournamentRoundWinner(int $matchId1, int $matchId2)
     {
         $match1 = Match::where('id', $matchId1)->first();
-        $match2 = Match::where('id', $matchId2)->first();
+        $match2 = Match::where('id', $matchId2)->where('winner', '>', '0')->first();
+
+        if (empty($match2)) {
+            return false;
+        }
 
         $team1 = new \stdClass();
         $team2 = new \stdClass();
@@ -326,7 +330,7 @@ class CompetitionRepository
         );
     }
 
-    public function updateKnockoutSummary(\stdClass $summary, int $tournamentStructureId)
+    public function updateKnockoutSummary(array $summary, int $tournamentStructureId)
     {
         try {
             DB::update(
