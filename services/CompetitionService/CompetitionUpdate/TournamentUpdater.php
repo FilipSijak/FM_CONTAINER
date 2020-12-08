@@ -81,7 +81,7 @@ class TournamentUpdater
             !$summary["finals_match"]
         ) {
             $firstGroupPair  = $summary["first_group"]["rounds"][$lastRound]["pairs"][0];
-            $secondGroupPair = $summary["first_group"]["rounds"][$lastRound]["pairs"][0];
+            $secondGroupPair = $summary["second_group"]["rounds"][$lastRound]["pairs"][0];
 
             $firstGroupWinner  = $firstGroupPair["winner"];
             $secondGroupWinner = $secondGroupPair["winner"];

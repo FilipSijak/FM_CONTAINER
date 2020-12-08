@@ -27,7 +27,7 @@ class GameFactory
             $game->updated_at   = $now;
             $game->game_version = null;
             $game->user_id      = $userId;
-            $game->game_date    = Carbon::create((int) date("Y"), 6, 1)->toDateString();
+            $game->game_date    = Carbon::create((int)date("Y"), 8, 15)->toDateString();
 
             if ($game->save()) {
                 return $game;

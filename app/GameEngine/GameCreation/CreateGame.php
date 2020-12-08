@@ -125,8 +125,10 @@ class CreateGame implements CreateGameInterface
         $competitionRepository = new CompetitionRepository();
         $clubsByCompetition    = $competitionRepository->getBaseClubsByCompetition($competition->id);
         $leagueFixtures        = $this->competitionService->setClubs($clubsByCompetition->toArray())->makeLeague();
+        $carbonCopy            = $this->firstSeasonFirstRoundStartDate->copy();
+        $seasonStart           = $carbonCopy->modify("next Sunday");
 
-        $this->populateLeagueFixtures($leagueFixtures, $competition->id);
+        $this->populateLeagueFixtures($leagueFixtures, $competition->id, $seasonStart);
 
         foreach ($clubsByCompetition as $club) {
             $competition->seasons()->attach(
@@ -150,23 +152,20 @@ class CreateGame implements CreateGameInterface
      * @param array $leagueFixtures
      * @param       $competitionId
      */
-    private function populateLeagueFixtures(array $leagueFixtures, $competitionId)
+    private function populateLeagueFixtures(array $leagueFixtures, $competitionId, $startDate, $roundLength = 10)
     {
-        $matchFactory          = new MatchFactory();
-        $seasonStart           = $this->firstSeasonFirstRoundStartDate::parse()->modify("next Sunday")->copy();
-        $competitionRepository = new CompetitionRepository();
-        $clubsByCompetition    = $competitionRepository->getBaseClubsByCompetition($competitionId);
-        $countRound            = count($clubsByCompetition) / 2;
+        $matchFactory = new MatchFactory();
+        $countRound   = $roundLength;
 
         foreach ($leagueFixtures as $fixture) {
-            $nextWeek = $countRound % 10 == 0;
+            $nextWeek = $countRound % $roundLength == 0;
 
             $matchFactory->make(
                 $this->gameId,
                 $competitionId,
                 $fixture->homeTeamId,
                 $fixture->awayTeamId,
-                $nextWeek ? $seasonStart->addWeek() : $seasonStart
+                $nextWeek ? $startDate->addWeek() : $startDate
             );
 
             $countRound++;
@@ -188,9 +187,11 @@ class CreateGame implements CreateGameInterface
             $mappedTeams = $competitionRepository->getTeamsMappedByTournamentGroup($competition->id);
 
             foreach ($mappedTeams as $group => $teams) {
+                $carbonCopy     = $this->firstSeasonFirstRoundStartDate->copy();
+                $firstRoundDate = $carbonCopy->modify("next Tuesday");
                 $leagueFixtures = $this->competitionService->setClubs($teams)->makeLeague();
 
-                $this->populateLeagueFixtures($leagueFixtures, $competition->id);
+                $this->populateLeagueFixtures($leagueFixtures, $competition->id, $firstRoundDate, 2);
             }
         } else {
             $this->populateTournamentFixtures($tournament, $competition->id);
@@ -249,9 +250,8 @@ class CreateGame implements CreateGameInterface
     public function populateTournamentFixtures(array $tournament, $competitionId)
     {
         $matchFactory = new MatchFactory();
-        $seasonStart  = $this->firstSeasonFirstRoundStartDate::parse()->modify("next Tuesday");
-        $firstGame    = $seasonStart->copy();
-        $secondGame   = $seasonStart->copy()->addWeek();
+        $firstGame    = $this->firstSeasonFirstRoundStartDate->copy()->modify("next Tuesday");
+        $secondGame   = $firstGame->copy()->addWeek();
 
         $firstRoundPairs = array_merge(
             $tournament["first_group"]["rounds"][1]["pairs"],
