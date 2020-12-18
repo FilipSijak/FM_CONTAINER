@@ -209,12 +209,12 @@ class CreateGame implements CreateGameInterface
         $currentGroup          = '';
 
         $groups = [
-            0  => 'A',
-            4  => 'B',
-            8  => 'C',
-            12 => 'D',
-            16 => 'E',
-            20 => 'F',
+            0  => 1,
+            4  => 2,
+            8  => 3,
+            12 => 4,
+            16 => 5,
+            20 => 6,
         ];
 
         for ($i = 0; $i < count($clubsByCompetition); $i++) {
@@ -257,6 +257,10 @@ class CreateGame implements CreateGameInterface
             $tournament["first_group"]["rounds"][1]["pairs"],
             $tournament["second_group"]["rounds"][1]["pairs"]
         );
+
+        if (!$this->gameId) {
+            $this->gameId = 1;
+        }
 
         foreach ($firstRoundPairs as $pair) {
             $match1 = $matchFactory->make(

@@ -206,11 +206,16 @@ class CompetitionRepository
     {
         // did each club play all the games
 
-        // how many groups tournament has
+        // how many groups tournament has   ?why?
+        // check how many game should be played
+        // check if all were played
+        // 4 teams equals to 12 games
+        // number of groups * games = 48
+        // if all 48 have winner > 0, group is finished
         $result = DB::select(
             "
                 SELECT
-                    count(tg.id)
+                    count(tg.id) AS numberOfGroups
                 FROM
                     (
                         SELECT groupId AS groupIds FROM tournament_groups
@@ -225,7 +230,23 @@ class CompetitionRepository
             ]
         );
 
-        return !empty($result);
+        $numberOfGames = $result[0]->numberOfGroups * 12;
+
+        $gamesPlayed = DB::select(
+            "
+            SELECT COUNT(id) AS gamesPlayed
+            FROM matches
+            WHERE competition_id = :competitionId
+            AND winner > 0
+            ",
+            ["competitionId" => $match["competition_id"]]
+        );
+
+        if ($numberOfGames == $gamesPlayed[0]->gamesPlayed) {
+            return true;
+        }
+
+        return false;
     }
 
     public function getTeamsMappedByTournamentGroup(int $competitionId)

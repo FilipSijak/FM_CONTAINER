@@ -3,6 +3,8 @@
 namespace Services\CompetitionService\CompetitionUpdate;
 
 use App\Factories\Competition\MatchFactory;
+use App\GameEngine\GameCreation\CreateGame;
+use App\Models\Club\Club;
 use App\Models\Competition\Match;
 use App\Models\Schema\KnockoutSummary;
 use App\Repositories\CompetitionRepository;
@@ -10,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Parsers\KnockoutSummaryParser;
 use Services\CompetitionService\CompetitionService;
+use Services\CompetitionService\Tournament\Tournament;
 use Services\MatchService\MatchService;
 
 class TournamentUpdater
@@ -40,10 +43,100 @@ class TournamentUpdater
     public function updatePointsTable()
     {
         if ($this->competitionRepository->tournamentGroupsFinished($this->matches[0])) {
-            return $this->updateTournamentSummary();
+            // update competition do be tournament
+            // create tournament based on group points
+
+            DB::update(
+                "
+                    UPDATE competitions
+                    SET groups = 0
+                    WHERE id = :competitionId
+                ",
+                ["competitionId" => $this->matches[0]["competition_id"]]
+            );
+
+            // decide which clubs process to knockout stage
+            $topClubsByGroups = DB::select(
+                "
+                    SELECT
+                        t1.*
+                    FROM
+                    (
+                        SELECT
+                            id,
+                            competition_id,
+                            club_id,
+                              points,
+                            groupId,
+                            @rn := IF(@prev = groupId, @rn + 1, 1) AS rn,
+                            @prev := groupId
+                        FROM tournament_groups
+                        JOIN (SELECT @prev := NULL, @rn := 0) AS vars
+                        ORDER BY groupId, points DESC
+                    ) AS t1
+                    WHERE rn <= 2;
+                "
+            );
+
+            $knockoutClubs = [];
+
+            foreach ($topClubsByGroups as $club) {
+                $knockoutClubs[] = Club::find($club->id)->toArray();
+            }
+
+            foreach ($topClubsByGroups as $club) {
+                $knockoutClubs[] = Club::find($club->id)->toArray();
+            }
+
+            $tournament = new Tournament($knockoutClubs);
+
+
+            $createGame = new CreateGame(1);
+
+            $createGame->populateTournamentFixtures($tournament->createTournament(), $this->matches[0]["competition_id"]);
+
+            // create tournament knockout matches
+        } else {
+            // foreach match, take winner/draw and find club/clubs in the tournament_groups table
+            // update each winner/draw with points
+
+            foreach ($this->matches as $match) {
+                if ($match["winner"] == 3) {
+                    // update both teams with a point
+                    DB::update(
+                        "
+                            UPDATE tournament_groups
+                            SET `points` = `points` + 1
+                            WHERE competition_id = :competitionId
+                            AND club_id IN (:firstTeam, :secondTeam)
+                        ",
+                        [
+                            "competitionId" => $match["competition_id"],
+                            "firstTeam"     => $match["hometeam_id"],
+                            "secondTeam"    => $match["awayteam_id"],
+                        ]
+                    );
+                } else {
+                    // update points for the winning team
+
+                    $winningTeamId = $match["winner"] == 1 ? $match["hometeam_id"] : $match["awayteam_id"];
+
+                    DB::update(
+                        "
+                            UPDATE tournament_groups
+                            SET `points` = `points` + 3
+                            WHERE competition_id = :competitionId
+                            AND club_id = :winningTeamId
+                        ",
+                        [
+                            "competitionId" => $match["competition_id"],
+                            "winningTeamId" => $winningTeamId,
+                        ]
+                    );
+                }
+            }
         }
 
-        // update group tables
 
         return $this;
     }
