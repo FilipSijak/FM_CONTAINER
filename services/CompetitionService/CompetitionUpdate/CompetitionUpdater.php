@@ -34,8 +34,9 @@ class CompetitionUpdater
                 $leagueUpdater->setMatches($matches)->updatePointsTable();
             } elseif ($competition->type == 'tournament') {
                 if ($competition->groups) {
+                    $tournamentUpdater->setMatches($matches)->updatePointsTable();
 
-                    //$tournamentUpdater->setMatches($matches)->updatePointsTable();
+
                     // update group tables
                     // if group tables are finished, update competition summary
                 } else {
