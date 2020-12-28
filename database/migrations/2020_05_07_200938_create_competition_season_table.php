@@ -17,7 +17,6 @@ class CreateCompetitionSeasonTable extends Migration
             $table->bigIncrements('id');
             $table->integer('competition_id')->unsigned();
             $table->integer('season_id')->unsigned();
-            $table->integer('game_id')->unsigned();
             $table->integer('club_id')->unsigned()->nullable();
         });
     }

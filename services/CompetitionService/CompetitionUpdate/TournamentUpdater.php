@@ -3,7 +3,6 @@
 namespace Services\CompetitionService\CompetitionUpdate;
 
 use App\Factories\Competition\MatchFactory;
-use App\GameEngine\GameCreation\CreateGame;
 use App\Models\Club\Club;
 use App\Models\Competition\Match;
 use App\Models\Schema\KnockoutSummary;
@@ -33,6 +32,11 @@ class TournamentUpdater
     }
 
 
+    /**
+     * @param array $matches
+     *
+     * @return $this
+     */
     public function setMatches(array $matches)
     {
         $this->matches = $matches;
@@ -40,11 +44,15 @@ class TournamentUpdater
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function updatePointsTable()
     {
         if ($this->competitionRepository->tournamentGroupsFinished($this->matches[0])) {
             // update competition do be tournament
             // create tournament based on group points
+            // create tournament knockout matches
 
             DB::update(
                 "
@@ -81,21 +89,12 @@ class TournamentUpdater
             $knockoutClubs = [];
 
             foreach ($topClubsByGroups as $club) {
-                $knockoutClubs[] = Club::find($club->id)->toArray();
-            }
-
-            foreach ($topClubsByGroups as $club) {
-                $knockoutClubs[] = Club::find($club->id)->toArray();
+                $club            = Club::find($club->id);
+                $knockoutClubs[] = $club->id;
             }
 
             $tournament = new Tournament($knockoutClubs);
-
-
-            $createGame = new CreateGame(1);
-
-            $createGame->populateTournamentFixtures($tournament->createTournament(), $this->matches[0]["competition_id"]);
-
-            // create tournament knockout matches
+            $tournament->createTournament()->populateTournamentFixtures($this->matches[0]["competition_id"], true);
         } else {
             // foreach match, take winner/draw and find club/clubs in the tournament_groups table
             // update each winner/draw with points
@@ -162,8 +161,8 @@ class TournamentUpdater
             !$summary["winner"] &&
             !$summary["finals_match"]
         ) {
-            $summary["first_group"]["rounds"]  = $this->updateTournamentGroup($knockoutSummary->getFirstGroup()["rounds"]);
-            $summary["second_group"]["rounds"] = $this->updateTournamentGroup($knockoutSummary->getSecondGroup()["rounds"]);
+            $summary["first_group"]["rounds"]  = $this->updateTournamentGroup($knockoutSummary->getFirstGroup()["rounds"], $competitionId);
+            $summary["second_group"]["rounds"] = $this->updateTournamentGroup($knockoutSummary->getSecondGroup()["rounds"], $competitionId);
         }
 
         if (
@@ -186,7 +185,6 @@ class TournamentUpdater
 
             // create finals match
             $summary["finals_match"] = $match->make(
-                $lastMatch->game_id,
                 $lastMatch->competition_id,
                 $firstGroupWinner,
                 $secondGroupWinner,
@@ -215,13 +213,15 @@ class TournamentUpdater
      * Goes through each round and checks if round is completed, creates new rounds and matches for it
      *
      * @param array $tournamentGroup
+     * @param int   $competitionId
      *
      * @return array
      */
-    public function updateTournamentGroup(array $tournamentGroup)
+    public function updateTournamentGroup(array $tournamentGroup, int $competitionId)
     {
         $finishedMatches = DB::select(
-            "SELECT * FROM matches WHERE competition_id = 7 AND winner > 0"
+            "SELECT * FROM matches WHERE competition_id = :competitionId AND winner > 0",
+            ["competitionId" => $competitionId]
         );
 
         foreach ($finishedMatches as $match) {
@@ -266,9 +266,8 @@ class TournamentUpdater
                     empty($tournamentGroup[$key]["pairs"])
                 ) {
                     $competitionService = new CompetitionService();
-                    $competitionService->setClubs($winners[$key - 1]);
-                    $newMatches = $competitionService->tournamentNewRound();
-                    $newMatches = json_decode(json_encode($newMatches), true);
+                    $newMatches         = $competitionService->tournamentNewRound($winners[$key - 1]);
+                    $newMatches         = json_decode(json_encode($newMatches), true);
                     $this->createNewRoundMatches($newMatches, Match::where('id', $tournamentGroup[$key - 1]["pairs"][0]["match2Id"])->first());
                     $tournamentGroup[$key]["pairs"] = $newMatches;
 
@@ -296,7 +295,6 @@ class TournamentUpdater
 
         foreach ($pairs as &$pair) {
             $pair["match1Id"] = $match->make(
-                $lastMatch->game_id,
                 $lastMatch->competition_id,
                 $pair["match1"]["homeTeamId"],
                 $pair["match1"]["awayTeamId"],
@@ -304,7 +302,6 @@ class TournamentUpdater
             )->id;
 
             $pair["match2Id"] = $match->make(
-                $lastMatch->game_id,
                 $lastMatch->competition_id,
                 $pair["match2"]["homeTeamId"],
                 $pair["match2"]["awayTeamId"],

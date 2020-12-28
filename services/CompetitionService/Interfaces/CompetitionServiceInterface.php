@@ -4,7 +4,7 @@ namespace Services\CompetitionService\Interfaces;
 
 interface CompetitionServiceInterface
 {
-    public function makeLeague();
+    public function makeLeague(array $clubs, int $competitionId, int $seasonId);
 
-    public function makeTournament();
+    public function makeTournament(array $clubs, int $competitionId, int $seasonId);
 }

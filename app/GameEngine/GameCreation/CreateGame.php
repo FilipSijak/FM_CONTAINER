@@ -3,8 +3,6 @@
 namespace App\GameEngine\GameCreation;
 
 use App\Factories\Club\BalanceFactory;
-use App\Factories\Competition\MatchFactory;
-use App\Factories\Competition\PointsFactory;
 use App\Factories\Competition\SeasonFactory;
 use App\Factories\Game\GameFactory;
 use App\GameEngine\Interfaces\CreateGameInterface;
@@ -17,7 +15,6 @@ use App\Models\Game\BaseCountries;
 use App\Models\Game\BaseStadium;
 use App\Repositories\CompetitionRepository;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
 use Services\CompetitionService\CompetitionService;
 use Services\GameService\GameData\GameInitialDataSeed;
@@ -103,197 +100,25 @@ class CreateGame implements CreateGameInterface
      */
     private function assignCompetitionsToSeason()
     {
-        $competitions = Competition::all();
+        $competitions          = Competition::all();
+        $competitionRepository = new CompetitionRepository();
 
         foreach ($competitions as $competition) {
-            if ($competition->type == 'league') {
-                $this->setLeagueCompetition($competition);
+            if ($competition->type == 'league' || ($competition->type == 'tournament' && $competition->groups)) {
+                if ($competition->type == 'league') {
+                    $clubs = $competitionRepository->getBaseClubsByCompetition($competition->id);
+                    $this->competitionService->makeLeague($clubs, $competition->id, $this->season->id);
+                } else {
+                    $clubs = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition->id);
+                    $this->competitionService->makeTournamentGroupStage($clubs, $competition->id, $this->season->id);
+                }
             } else {
-                $this->setTournamentCompetition($competition);
+                $clubs = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition->id);
+                $this->competitionService->makeTournament($clubs, $competition->id, $this->season->id);
             }
         }
 
         return $this;
-    }
-
-    /**
-     * @param Competition $competition
-     */
-    private function setLeagueCompetition(Competition $competition)
-    {
-        $pointsFactory         = new PointsFactory();
-        $competitionRepository = new CompetitionRepository();
-        $clubsByCompetition    = $competitionRepository->getBaseClubsByCompetition($competition->id);
-        $leagueFixtures        = $this->competitionService->setClubs($clubsByCompetition->toArray())->makeLeague();
-        $carbonCopy            = $this->firstSeasonFirstRoundStartDate->copy();
-        $seasonStart           = $carbonCopy->modify("next Sunday");
-
-        $this->populateLeagueFixtures($leagueFixtures, $competition->id, $seasonStart);
-
-        foreach ($clubsByCompetition as $club) {
-            $competition->seasons()->attach(
-                $this->season->id,
-                [
-                    'game_id' => $this->gameId,
-                    'club_id' => $club->id,
-                ]
-            );
-
-            $pointsFactory->make(
-                $club->id,
-                $this->gameId,
-                $competition->id,
-                $this->season->id
-            );
-        }
-    }
-
-    /**
-     * @param array $leagueFixtures
-     * @param       $competitionId
-     */
-    private function populateLeagueFixtures(array $leagueFixtures, $competitionId, $startDate, $roundLength = 10)
-    {
-        $matchFactory = new MatchFactory();
-        $countRound   = $roundLength;
-
-        foreach ($leagueFixtures as $fixture) {
-            $nextWeek = $countRound % $roundLength == 0;
-
-            $matchFactory->make(
-                $this->gameId,
-                $competitionId,
-                $fixture->homeTeamId,
-                $fixture->awayTeamId,
-                $nextWeek ? $startDate->addWeek() : $startDate
-            );
-
-            $countRound++;
-        }
-    }
-
-    /**
-     * @param Competition $competition
-     */
-    public function setTournamentCompetition(Competition $competition)
-    {
-        $competitionRepository = new CompetitionRepository();
-        $clubsByCompetition    = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition);
-        $tournament            = $this->competitionService->setClubs($clubsByCompetition->toArray())->makeTournament();
-
-        if ($competition->groups) {
-            $this->populateTournamentGroups($competition->id);
-
-            $mappedTeams = $competitionRepository->getTeamsMappedByTournamentGroup($competition->id);
-
-            foreach ($mappedTeams as $group => $teams) {
-                $carbonCopy     = $this->firstSeasonFirstRoundStartDate->copy();
-                $firstRoundDate = $carbonCopy->modify("next Tuesday");
-                $leagueFixtures = $this->competitionService->setClubs($teams)->makeLeague();
-
-                $this->populateLeagueFixtures($leagueFixtures, $competition->id, $firstRoundDate, 2);
-            }
-        } else {
-            $this->populateTournamentFixtures($tournament, $competition->id);
-        }
-    }
-
-    /**
-     * @param int $competitionId
-     */
-    public function populateTournamentGroups(int $competitionId)
-    {
-        $competitionRepository = new CompetitionRepository();
-        $clubsByCompetition    = $competitionRepository->getInitialTournamentTeamsBasedOnRanks();
-        $counter               = 0;
-        $currentGroup          = '';
-
-        $groups = [
-            0  => 1,
-            4  => 2,
-            8  => 3,
-            12 => 4,
-            16 => 5,
-            20 => 6,
-        ];
-
-        for ($i = 0; $i < count($clubsByCompetition); $i++) {
-            if (isset($groups[$counter])) {
-                $currentGroup = $groups[$counter];
-            }
-
-            try {
-                DB::insert(
-                    "
-                    INSERT INTO tournament_groups (competition_id, groupId, club_id, points)
-                    VALUES (:competitionId, :groupId, :clubId, :points)
-                    ",
-                    [
-                        'competitionId' => $competitionId,
-                        'groupId'       => $currentGroup,
-                        'clubId'        => $clubsByCompetition[$i]->id,
-                        'points'        => 0,
-                    ]
-                );
-            } catch (\Exception $e) {
-                // @TODO
-            }
-
-            $counter++;
-        }
-    }
-
-    /**
-     * @param array $tournament
-     * @param       $competitionId
-     */
-    public function populateTournamentFixtures(array $tournament, $competitionId)
-    {
-        $matchFactory = new MatchFactory();
-        $firstGame    = $this->firstSeasonFirstRoundStartDate->copy()->modify("next Tuesday");
-        $secondGame   = $firstGame->copy()->addWeek();
-
-        $firstRoundPairs = array_merge(
-            $tournament["first_group"]["rounds"][1]["pairs"],
-            $tournament["second_group"]["rounds"][1]["pairs"]
-        );
-
-        if (!$this->gameId) {
-            $this->gameId = 1;
-        }
-
-        foreach ($firstRoundPairs as $pair) {
-            $match1 = $matchFactory->make(
-                $this->gameId,
-                $competitionId,
-                $pair->match1->homeTeamId,
-                $pair->match1->awayTeamId,
-                $firstGame
-            );
-
-            $pair->match1Id = $match1->id;
-
-            $match2 = $matchFactory->make(
-                $this->gameId,
-                $competitionId,
-                $pair->match2->homeTeamId,
-                $pair->match2->awayTeamId,
-                $secondGame
-            );
-
-            $pair->match2Id = $match2->id;
-        }
-
-        DB::insert(
-            "
-                INSERT INTO tournament_knockout (competition_id, summary)
-                VALUES (:competitionId, :summary)
-            ",
-            [
-                'competitionId' => $competitionId,
-                'summary'       => json_encode($tournament),
-            ]
-        );
     }
 
     /**

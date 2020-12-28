@@ -2,6 +2,11 @@
 
 namespace Services\CompetitionService\League;
 
+use App\Factories\Competition\MatchFactory;
+use App\Factories\Competition\PointsFactory;
+use App\Models\Competition\Competition;
+use Services\CompetitionService\CompetitionsConfig\TournamentConfig;
+
 class League
 {
     protected $clubs;
@@ -14,17 +19,49 @@ class League
 
     protected $numberOfGamesInRound;
 
-    public function __construct(array $clubs)
+    /**
+     * League constructor.
+     *
+     * @param array $clubs - array of clubs id's
+     * @param int   $competitionId
+     * @param int   $seasonId
+     */
+    public function __construct(array $clubs, int $competitionId, int $seasonId)
     {
-        $this->clubs = [];
-
-        foreach ($clubs as $club) {
-            $this->clubs[] = (object)$club;
-        }
-
-        $this->competitionSize      = count($clubs);
+        $this->clubs                = $clubs;
+        $this->competitionId        = $competitionId;
+        $this->seasonId             = $seasonId;
+        $this->competitionSize      = count($this->clubs);
         $this->numberOfGamesInRound = $this->competitionSize / 2;
-        $this->fixed                = !empty($this->clubs) ? $this->clubs[0]->id : 0;
+        $this->fixed                = !empty($this->clubs) ? $this->clubs[0] : 0;
+    }
+
+    public function setLeagueCompetition()
+    {
+        $pointsFactory    = new PointsFactory();
+        $tournamentConfig = new TournamentConfig();
+        $leagueFixtures   = $this->generateLeagueGames();
+        $carbonCopy       = $tournamentConfig->getStartDate()->copy();
+        $seasonStart      = $carbonCopy->modify("next Sunday");
+
+        $this->populateLeagueFixtures($leagueFixtures, $this->competitionId, $seasonStart);
+
+        $competition = Competition::find($this->competitionId);
+
+        foreach ($this->clubs as $clubId) {
+            $competition->seasons()->attach(
+                $this->seasonId,
+                [
+                    'club_id' => $clubId,
+                ]
+            );
+
+            $pointsFactory->make(
+                $clubId,
+                $this->competitionId,
+                $this->seasonId
+            );
+        }
     }
 
     /**
@@ -39,8 +76,8 @@ class League
         // Creates first round
         for ($i = 0, $k = $this->competitionSize - 1; $i < $k; $i++, $k--) {
             $game             = new \stdClass();
-            $game->homeTeamId = $this->clubs[$i]->id;
-            $game->awayTeamId = $this->clubs[$k]->id;
+            $game->homeTeamId = $this->clubs[$i];
+            $game->awayTeamId = $this->clubs[$k];
 
             $this->games[] = $game;
         }
@@ -127,5 +164,28 @@ class League
         }
 
         return $this->games = array_merge($this->games, $rematchGames);
+    }
+
+    /**
+     * @param array $leagueFixtures
+     * @param       $competitionId
+     */
+    public function populateLeagueFixtures(array $leagueFixtures, $competitionId, $startDate, $roundLength = 10)
+    {
+        $matchFactory = new MatchFactory();
+        $countRound   = $roundLength;
+
+        foreach ($leagueFixtures as $fixture) {
+            $nextWeek = $countRound % $roundLength == 0;
+
+            $matchFactory->make(
+                $competitionId,
+                $fixture->homeTeamId,
+                $fixture->awayTeamId,
+                $nextWeek ? $startDate->addWeek() : $startDate
+            );
+
+            $countRound++;
+        }
     }
 }

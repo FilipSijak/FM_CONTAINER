@@ -19,7 +19,30 @@ class CompetitionRepository
      */
     public function getBaseClubsByCompetition(int $competitionId)
     {
-        return BaseClubs::all()->where('competition_id', $competitionId);
+        $baseClubs = BaseClubs::all()->where('competition_id', $competitionId);
+        $clubs     = [];
+
+        foreach ($baseClubs as $club) {
+            $clubs[] = $club->id;
+        }
+
+        return $clubs;
+    }
+
+    public function getClubsByCompetition(int $competition)
+    {
+        $result = DB::select(
+            "SELECT club_id FROM competition_season WHERE competition_id = :competitionId",
+            ["competitionId" => $competition]
+        );
+
+        $clubs = [];
+
+        foreach ($result as $club) {
+            $clubs[] = $club->club_id;
+        }
+
+        return $clubs;
     }
 
     public function getInitialTournamentTeamsBasedOnRanks($competition = null)
@@ -31,8 +54,15 @@ class CompetitionRepository
          * After more clubs are added to the database, only 32 of the best clubs will be added to the CL
          * for initial season. After first season, clubs will be selected based on their performance
          */
+        $result = Club::where('game_id', 1)->take(16)->get();
 
-        return Club::where('game_id', 1)->take(16)->get();
+        $clubs = [];
+
+        foreach ($result as $club) {
+            $clubs[] = $club->id;
+        }
+
+        return $clubs;
     }
 
     /**
@@ -180,7 +210,7 @@ class CompetitionRepository
             ",
             [
                 "points" => $homeTeamPoints,
-                "clubId" => $match['hometeam_id']
+                "clubId" => $match['hometeam_id'],
             ]
         );
 
@@ -192,26 +222,20 @@ class CompetitionRepository
             ",
             [
                 "points" => $awayTeamPoints,
-                "clubId" => $match['awayteam_id']
+                "clubId" => $match['awayteam_id'],
             ]
         );
     }
 
-    public function updateTournamentSummary()
-    {
-
-    }
-
+    /**
+     * Checks if all the games from the group stage have been played
+     *
+     * @param array $match
+     *
+     * @return bool
+     */
     public function tournamentGroupsFinished(array $match)
     {
-        // did each club play all the games
-
-        // how many groups tournament has   ?why?
-        // check how many game should be played
-        // check if all were played
-        // 4 teams equals to 12 games
-        // number of groups * games = 48
-        // if all 48 have winner > 0, group is finished
         $result = DB::select(
             "
                 SELECT
@@ -261,7 +285,7 @@ class CompetitionRepository
                 WHERE competition_id = :competitionId
             ",
             [
-                'competitionId' => $competitionId
+                'competitionId' => $competitionId,
             ]
         );
 
@@ -270,7 +294,7 @@ class CompetitionRepository
                 $mappedTeams[$team->groupId] = [];
             }
 
-            $mappedTeams[$team->groupId][] = $team;
+            $mappedTeams[$team->groupId][] = $team->id;
         }
 
         return $mappedTeams;
@@ -288,12 +312,12 @@ class CompetitionRepository
         $team1 = new \stdClass();
         $team2 = new \stdClass();
 
-        $team1->id = $match1->hometeam_id;
-        $team2->id = $match1->awayteam_id;
-        $team1->goals = $match1->home_team_goals;
-        $team2->goals = $match1->away_team_goals;
-        $team1->goals += $match2->away_team_goals;
-        $team2->goals += $match2->home_team_goals;
+        $team1->id     = $match1->hometeam_id;
+        $team2->id     = $match1->awayteam_id;
+        $team1->goals  = $match1->home_team_goals;
+        $team2->goals  = $match1->away_team_goals;
+        $team1->goals  += $match2->away_team_goals;
+        $team2->goals  += $match2->home_team_goals;
         $team1->points = 0;
         $team2->points = 0;
 

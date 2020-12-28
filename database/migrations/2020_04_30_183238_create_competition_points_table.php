@@ -19,7 +19,6 @@ class CreateCompetitionPointsTable extends Migration
             $table->integer('season_id');
             $table->integer('club_id');
             $table->integer('points');
-            $table->integer('game_id');
         });
     }
 
