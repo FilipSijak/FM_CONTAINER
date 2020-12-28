@@ -9,7 +9,6 @@ use Carbon\Carbon;
 class MatchFactory
 {
     /**
-     * @param int    $gameId
      * @param int    $competitionId
      * @param int    $homeTeamId
      * @param int    $awayTeamId
@@ -17,7 +16,6 @@ class MatchFactory
      */
     public function make
     (
-        int $gameId,
         int $competitionId,
         int $homeTeamId,
         int $awayTeamId,
@@ -25,7 +23,6 @@ class MatchFactory
     ) {
         $match = new Match();
 
-        $match->game_id        = $gameId;
         $match->competition_id = $competitionId;
         $match->hometeam_id    = $homeTeamId;
         $match->awayteam_id    = $awayTeamId;

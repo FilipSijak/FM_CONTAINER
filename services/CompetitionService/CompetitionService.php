@@ -11,38 +11,56 @@ use Services\CompetitionService\Tournament\Tournament;
 class CompetitionService implements CompetitionServiceInterface
 {
     /**
-     * @var array
+     * @param array $clubs
+     * @param int   $competitionId
+     * @param int   $seasonId
      */
-    protected $clubs;
-
-    public function setClubs(array $clubs)
+    public function makeLeague(array $clubs, int $competitionId, int $seasonId)
     {
-        $this->clubs = $clubs;
+        $league = new League($clubs, $competitionId, $seasonId);
 
-        return $this;
+        $league->setLeagueCompetition();
     }
 
-    public function makeLeague()
+    /**
+     * @param array $clubs
+     * @param int   $competitionId
+     * @param int   $seasonId
+     */
+    public function makeTournament(array $clubs, int $competitionId, int $seasonId)
     {
-        $league = new League($this->clubs);
+        $tournament = new Tournament($clubs);
 
-        return $league->generateLeagueGames();
+        $tournament->createTournament()->populateTournamentFixtures($competitionId);
     }
 
-    public function makeTournament()
+    /**
+     * @param array $clubs
+     * @param int   $competitionId
+     * @param int   $seasonId
+     */
+    public function makeTournamentGroupStage(array $clubs, int $competitionId, int $seasonId)
     {
-        $tournament = new Tournament($this->clubs);
+        $tournament = new Tournament($clubs);
 
-        return $tournament->createTournament();
+        $tournament->setTournamentGroups($clubs, $competitionId, $seasonId);
     }
 
-    public function tournamentNewRound()
+    /**
+     * @param array $clubs
+     *
+     * @return array
+     */
+    public function tournamentNewRound(array $clubs)
     {
-        $tournament = new Tournament($this->clubs);
+        $tournament = new Tournament($clubs);
 
-        return $tournament->setNextRoundPairs($this->clubs);
+        return $tournament->setNextRoundPairs();
     }
 
+    /**
+     * @param array $matches
+     */
     public function competitionsRoundUpdate(array $matches)
     {
         $competitionUpdater = new CompetitionUpdater();

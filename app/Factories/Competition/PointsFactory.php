@@ -17,13 +17,11 @@ class PointsFactory
     public function make
     (
         int $clubId,
-        int $gameId,
         int $competitionId,
         int $seasonId
     ) {
         $points                 = new CompetitionPoints();
         $points->club_id        = $clubId;
-        $points->game_id        = $gameId;
         $points->points         = 0;
         $points->competition_id = $competitionId;
         $points->season_id      = $seasonId;
