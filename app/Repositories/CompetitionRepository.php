@@ -388,4 +388,117 @@ class CompetitionRepository
 
         }
     }
+
+    /**
+     * @param int $competitionId
+     *
+     * @return array
+     */
+    public function topClubsByTournamentGroup(int $competitionId): array
+    {
+        return DB::select(
+            "
+                SELECT
+                    t1.*
+                FROM
+                (
+                    SELECT
+                        id,
+                        competition_id,
+                        club_id,
+                          points,
+                        groupId,
+                        @rn := IF(@prev = groupId, @rn + 1, 1) AS rn,
+                        @prev := groupId
+                    FROM tournament_groups
+                    JOIN (SELECT @prev := NULL, @rn := 0) AS vars
+                    ORDER BY groupId, points DESC
+                ) AS t1
+                WHERE rn <= 2
+                AND competition_id = :competitionId;
+            ",
+            ["competitionId" => $competitionId]
+        );
+    }
+
+    /**
+     * @param int $competitionId
+     * @param int $homeTeamId
+     * @param int $points
+     */
+    public function updateTeamCompetitionPoints(int $competitionId, int $homeTeamId, int $points)
+    {
+        DB::update(
+            "
+                UPDATE tournament_groups
+                SET `points` = `points` + :points
+                WHERE competition_id = :competitionId
+                AND club_id = :teamId
+            ",
+            [
+                "points"        => $points,
+                "competitionId" => $competitionId,
+                "teamId"        => $homeTeamId,
+            ]
+        );
+    }
+
+    /**
+     * @param int $competitionId
+     *
+     * @return array
+     */
+    public function finishedKnockoutMatches(int $competitionId): array
+    {
+        return DB::select(
+            "SELECT * FROM matches WHERE competition_id = :competitionId AND winner > 0",
+            ["competitionId" => $competitionId]
+        );
+    }
+
+    public function resetTournamentGroupRule(int $competitionId)
+    {
+        DB::update(
+            "
+                    UPDATE competitions
+                    SET groups = 0
+                    WHERE id = :competitionId
+                ",
+            ["competitionId" => $competitionId]
+        );
+    }
+
+    /**
+     * @param int   $competitionId
+     * @param array $summary
+     */
+    public function insertTournamentKnockoutSummary(int $competitionId, array $summary)
+    {
+        DB::insert(
+            "
+                INSERT INTO tournament_knockout (competition_id, summary)
+                VALUES (:competitionId, :summary)
+            ",
+            [
+                'competitionId' => $competitionId,
+                'summary'       => json_encode($summary),
+            ]
+        );
+    }
+
+    public function insertTournamentGroups(int $competitionId, int $group, $clubId)
+    {
+        DB::insert(
+            "
+                    INSERT INTO `tournament_groups` (`competition_id`, `groupId`, `club_id`, `points`)
+                    VALUES (:competitionId, :groupId, :clubId, :points)
+                    ",
+            [
+                'competitionId' => $competitionId,
+                'groupId'       => $group,
+                'clubId'        => $clubId,
+                'points'        => 0,
+            ]
+        );
+    }
 }

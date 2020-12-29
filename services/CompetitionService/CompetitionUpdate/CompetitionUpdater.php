@@ -46,7 +46,6 @@ class CompetitionUpdater
                 }
 
             }
-            // call a function that will check which type of competition parser should the match go to
         }
     }
 }
