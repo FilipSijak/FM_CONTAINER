@@ -8,7 +8,6 @@ use App\Models\Competition\Match;
 use App\Models\Schema\KnockoutSummary;
 use App\Repositories\CompetitionRepository;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Parsers\KnockoutSummaryParser;
 use Services\CompetitionService\CompetitionService;
 use Services\CompetitionService\Tournament\Tournament;
@@ -54,39 +53,13 @@ class TournamentUpdater
             // create tournament based on group points
             // create tournament knockout matches
 
-            DB::update(
-                "
-                    UPDATE competitions
-                    SET groups = 0
-                    WHERE id = :competitionId
-                ",
-                ["competitionId" => $this->matches[0]["competition_id"]]
-            );
+            $competitionId = $this->matches[0]["competition_id"];
+
+            $this->competitionRepository->resetTournamentGroupRule($competitionId);
 
             // decide which clubs process to knockout stage
-            $topClubsByGroups = DB::select(
-                "
-                    SELECT
-                        t1.*
-                    FROM
-                    (
-                        SELECT
-                            id,
-                            competition_id,
-                            club_id,
-                              points,
-                            groupId,
-                            @rn := IF(@prev = groupId, @rn + 1, 1) AS rn,
-                            @prev := groupId
-                        FROM tournament_groups
-                        JOIN (SELECT @prev := NULL, @rn := 0) AS vars
-                        ORDER BY groupId, points DESC
-                    ) AS t1
-                    WHERE rn <= 2;
-                "
-            );
-
-            $knockoutClubs = [];
+            $topClubsByGroups = $this->competitionRepository->topClubsByTournamentGroup($competitionId);
+            $knockoutClubs    = [];
 
             foreach ($topClubsByGroups as $club) {
                 $club            = Club::find($club->id);
@@ -102,40 +75,30 @@ class TournamentUpdater
             foreach ($this->matches as $match) {
                 if ($match["winner"] == 3) {
                     // update both teams with a point
-                    DB::update(
-                        "
-                            UPDATE tournament_groups
-                            SET `points` = `points` + 1
-                            WHERE competition_id = :competitionId
-                            AND club_id IN (:firstTeam, :secondTeam)
-                        ",
-                        [
-                            "competitionId" => $match["competition_id"],
-                            "firstTeam"     => $match["hometeam_id"],
-                            "secondTeam"    => $match["awayteam_id"],
-                        ]
+                    $this->competitionRepository->updateTeamCompetitionPoints(
+                        $match["competition_id"],
+                        $match["hometeam_id"],
+                        1
+                    );
+
+                    $this->competitionRepository->updateTeamCompetitionPoints(
+                        $match["competition_id"],
+                        $match["awayteam_id"],
+                        1
                     );
                 } else {
                     // update points for the winning team
 
                     $winningTeamId = $match["winner"] == 1 ? $match["hometeam_id"] : $match["awayteam_id"];
 
-                    DB::update(
-                        "
-                            UPDATE tournament_groups
-                            SET `points` = `points` + 3
-                            WHERE competition_id = :competitionId
-                            AND club_id = :winningTeamId
-                        ",
-                        [
-                            "competitionId" => $match["competition_id"],
-                            "winningTeamId" => $winningTeamId,
-                        ]
+                    $this->competitionRepository->updateTeamCompetitionPoints(
+                        $match["competition_id"],
+                        $winningTeamId,
+                        3
                     );
                 }
             }
         }
-
 
         return $this;
     }
@@ -145,7 +108,7 @@ class TournamentUpdater
      *
      * @return $this
      */
-    public function updateTournamentSummary()
+    public function updateTournamentSummary(): TournamentUpdater
     {
         $competitionId       = $this->matches[0]['competition_id'];
         $tournamentStructure = $this->competitionRepository->tournamentKnockoutStageByCompetitionId($competitionId)[0];
@@ -161,8 +124,8 @@ class TournamentUpdater
             !$summary["winner"] &&
             !$summary["finals_match"]
         ) {
-            $summary["first_group"]["rounds"]  = $this->updateTournamentGroup($knockoutSummary->getFirstGroup()["rounds"], $competitionId);
-            $summary["second_group"]["rounds"] = $this->updateTournamentGroup($knockoutSummary->getSecondGroup()["rounds"], $competitionId);
+            $summary["first_group"]["rounds"]  = $this->updateKnockoutGroup($knockoutSummary->getFirstGroup()["rounds"], $competitionId);
+            $summary["second_group"]["rounds"] = $this->updateKnockoutGroup($knockoutSummary->getSecondGroup()["rounds"], $competitionId);
         }
 
         if (
@@ -209,7 +172,7 @@ class TournamentUpdater
     }
 
     /**
-     * Gets an array that represents the tournament
+     * Gets an array that represents one half of the knockout stage
      * Goes through each round and checks if round is completed, creates new rounds and matches for it
      *
      * @param array $tournamentGroup
@@ -217,12 +180,9 @@ class TournamentUpdater
      *
      * @return array
      */
-    public function updateTournamentGroup(array $tournamentGroup, int $competitionId)
+    private function updateKnockoutGroup(array $tournamentGroup, int $competitionId): array
     {
-        $finishedMatches = DB::select(
-            "SELECT * FROM matches WHERE competition_id = :competitionId AND winner > 0",
-            ["competitionId" => $competitionId]
-        );
+        $finishedMatches = $this->competitionRepository->finishedKnockoutMatches($competitionId);
 
         foreach ($finishedMatches as $match) {
             $matchesMapped[$match->id] = $match->id;

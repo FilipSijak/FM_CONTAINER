@@ -3,9 +3,7 @@
 namespace Services\CompetitionService\Tournament;
 
 use App\Factories\Competition\MatchFactory;
-use App\Models\Competition\Competition;
 use App\Repositories\CompetitionRepository;
-use Illuminate\Support\Facades\DB;
 use Services\CompetitionService\CompetitionsConfig\TournamentConfig;
 use Services\CompetitionService\CompetitionService;
 use Services\CompetitionService\League\League;
@@ -20,6 +18,11 @@ class Tournament
      * @var CompetitionService
      */
     private $competitionService;
+    /**
+     * @var CompetitionRepository
+     */
+    private $competitionRepository;
+    private $clubs;
 
     /**
      * Tournament constructor.
@@ -28,8 +31,9 @@ class Tournament
      */
     public function __construct($clubs)
     {
-        $this->clubs              = $clubs;
-        $this->competitionService = new CompetitionService();
+        $this->clubs                 = $clubs;
+        $this->competitionService    = new CompetitionService();
+        $this->competitionRepository = new CompetitionRepository();
     }
 
     public function createTournament(): Tournament
@@ -112,17 +116,10 @@ class Tournament
         return $pair;
     }
 
-    public function getTournamentSummary()
-    {
-        return $this->summary;
-    }
-
     /**
-     * @param array $clubs
-     *
      * @return array
      */
-    public function setNextRoundPairs()
+    public function setNextRoundPairs(): array
     {
         $clubsCount = count($this->clubs);
         $halfSize   = ($clubsCount / 2);
@@ -136,7 +133,8 @@ class Tournament
     }
 
     /**
-     * @param int $competitionId
+     * @param int  $competitionId
+     * @param bool $startDate
      */
     public function populateTournamentFixtures(int $competitionId, $startDate = false)
     {
@@ -177,64 +175,29 @@ class Tournament
             $pair->match2Id = $match2->id;
         }
 
-        DB::insert(
-            "
-                INSERT INTO tournament_knockout (competition_id, summary)
-                VALUES (:competitionId, :summary)
-            ",
-            [
-                'competitionId' => $competitionId,
-                'summary'       => json_encode($this->summary),
-            ]
-        );
+        $this->competitionRepository->insertTournamentKnockoutSummary($competitionId, $this->summary);
     }
 
     /**
-     * @param Competition $competition
+     * @param array $clubs
+     * @param int   $competitionId
+     * @param int   $seasonId
      */
     public function setTournamentGroups(array $clubs, int $competitionId, int $seasonId)
     {
-        $competitionRepository = new CompetitionRepository();
-        $tournamentConfig      = new TournamentConfig();
-
-
+        $tournamentConfig = new TournamentConfig();
         $this->populateTournamentGroups($competitionId);
-
-        $mappedTeams = $competitionRepository->getTeamsMappedByTournamentGroup($competitionId);
-
+        $mappedTeams = $this->competitionRepository->getTeamsMappedByTournamentGroup($competitionId);
 
         foreach ($mappedTeams as $group => $teams) {
             $carbonCopy     = $tournamentConfig->getStartDate()->copy();
             $firstRoundDate = $carbonCopy->modify("next Tuesday");
             $league         = new League($teams, $competitionId, $seasonId);
             $leagueFixtures = $league->generateLeagueGames();
-            //$leagueFixtures = $this->competitionService->setClubs($teams)->makeLeague();
 
             $league->populateLeagueFixtures($leagueFixtures, $competitionId, $firstRoundDate, 2);
         }
     }
-    /*public function setTournamentGroups(Competition $competition)
-    {
-        $competitionRepository = new CompetitionRepository();
-        $tournamentConfig      = new TournamentConfig();
-        $clubsByCompetition    = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition);
-
-        if ($competition->groups) {
-            $this->populateTournamentGroups($competition->id);
-
-            $mappedTeams = $competitionRepository->getTeamsMappedByTournamentGroup($competition->id);
-
-            foreach ($mappedTeams as $group => $teams) {
-                $carbonCopy     = $tournamentConfig->getStartDate()->copy();
-                $firstRoundDate = $carbonCopy->modify("next Tuesday");
-                $leagueFixtures = $this->competitionService->setClubs($teams)->makeLeague();
-
-                $this->populateLeagueFixtures($leagueFixtures, $competition->id, $firstRoundDate, 2);
-            }
-        } else {
-            $this->competitionService->setClubs($clubsByCompetition->toArray())->makeTournament($competition->id);
-        }
-    }*/
 
     /**
      * @param int $competitionId
@@ -261,18 +224,7 @@ class Tournament
             }
 
             try {
-                DB::insert(
-                    "
-                    INSERT INTO `tournament_groups` (`competition_id`, `groupId`, `club_id`, `points`)
-                    VALUES (:competitionId, :groupId, :clubId, :points)
-                    ",
-                    [
-                        'competitionId' => $competitionId,
-                        'groupId'       => $currentGroup,
-                        'clubId'        => $clubsByCompetition[$i],
-                        'points'        => 0,
-                    ]
-                );
+                $this->competitionRepository->insertTournamentGroups($competitionId, $currentGroup, $clubsByCompetition[$i]);
             } catch (\Exception $e) {
                 // @TODO
                 dd($e);
