@@ -186,9 +186,8 @@ class Tournament
     public function setTournamentGroups(array $clubs, int $competitionId, int $seasonId)
     {
         $tournamentConfig = new TournamentConfig();
-        $mappedTeams      = $this->competitionRepository->getTeamsMappedByTournamentGroup($competitionId);
-
         $this->populateTournamentGroups($competitionId);
+        $mappedTeams = $this->competitionRepository->getTeamsMappedByTournamentGroup($competitionId);
 
         foreach ($mappedTeams as $group => $teams) {
             $carbonCopy     = $tournamentConfig->getStartDate()->copy();
