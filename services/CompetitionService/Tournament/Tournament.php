@@ -2,7 +2,7 @@
 
 namespace Services\CompetitionService\Tournament;
 
-use App\Factories\Competition\MatchFactory;
+use Services\MatchService\Factories\MatchFactory;
 use App\Repositories\CompetitionRepository;
 use Services\CompetitionService\CompetitionsConfig\TournamentConfig;
 use Services\CompetitionService\CompetitionService;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Factories\Competition;
+namespace Services\MatchService\Factories;
 
 use App\Models\Club\Club;
 use App\Models\Competition\Match;
@@ -13,6 +13,8 @@ class MatchFactory
      * @param int    $homeTeamId
      * @param int    $awayTeamId
      * @param Carbon $matchStart
+     *
+     * @return Match
      */
     public function make
     (
@@ -20,7 +22,7 @@ class MatchFactory
         int $homeTeamId,
         int $awayTeamId,
         Carbon $matchStart
-    ) {
+    ): Match {
         $match = new Match();
 
         $match->competition_id = $competitionId;

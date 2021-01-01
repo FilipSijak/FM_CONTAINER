@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Factories\Competition;
+namespace Services\CompetitionService\Factories;
 
 use App\Models\Competition\CompetitionPoints;
 
@@ -8,7 +8,6 @@ class PointsFactory
 {
     /**
      * @param int $clubId
-     * @param int $gameId
      * @param int $competitionId
      * @param int $seasonId
      *
@@ -19,7 +18,7 @@ class PointsFactory
         int $clubId,
         int $competitionId,
         int $seasonId
-    ) {
+    ): CompetitionPoints {
         $points                 = new CompetitionPoints();
         $points->club_id        = $clubId;
         $points->points         = 0;
