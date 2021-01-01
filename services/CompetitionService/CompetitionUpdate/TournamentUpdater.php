@@ -2,7 +2,7 @@
 
 namespace Services\CompetitionService\CompetitionUpdate;
 
-use App\Factories\Competition\MatchFactory;
+use Services\MatchService\Factories\MatchFactory;
 use App\Models\Club\Club;
 use App\Models\Competition\Match;
 use App\Models\Schema\KnockoutSummary;

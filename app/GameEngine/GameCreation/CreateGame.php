@@ -3,7 +3,7 @@
 namespace App\GameEngine\GameCreation;
 
 use App\Factories\Club\BalanceFactory;
-use App\Factories\Competition\SeasonFactory;
+use Services\CompetitionService\Factories\SeasonFactory;
 use App\Factories\Game\GameFactory;
 use App\GameEngine\Interfaces\CreateGameInterface;
 use App\Models\Club\Club;

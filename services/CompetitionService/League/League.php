@@ -2,8 +2,8 @@
 
 namespace Services\CompetitionService\League;
 
-use App\Factories\Competition\MatchFactory;
-use App\Factories\Competition\PointsFactory;
+use Services\MatchService\Factories\MatchFactory;
+use Services\CompetitionService\Factories\PointsFactory;
 use App\Models\Competition\Competition;
 use Services\CompetitionService\CompetitionsConfig\TournamentConfig;
 

@@ -1,6 +1,5 @@
 <?php
 
-use App\Factories\Competition\SeasonFactory;
 use App\GameEngine\GameCreation\CreateGame;
 use Illuminate\Database\Seeder;
 

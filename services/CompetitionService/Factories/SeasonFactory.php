@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Factories\Competition;
+namespace Services\CompetitionService\Factories;
 
 use App\Models\Competition\Season;
 
-
 class SeasonFactory
 {
-    public function make(int $gameId)
+    public function make(int $gameId): Season
     {
         $season = new Season();
 
