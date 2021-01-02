@@ -31,7 +31,9 @@ class CompetitionService implements CompetitionServiceInterface
     {
         $tournament = new Tournament($clubs);
 
-        $tournament->createTournament()->populateTournamentFixtures($competitionId);
+        $tournament->createTournament()
+                   ->populateTournamentFixtures($competitionId)
+                   ->assignSeason($seasonId, $competitionId);
     }
 
     /**
@@ -43,7 +45,7 @@ class CompetitionService implements CompetitionServiceInterface
     {
         $tournament = new Tournament($clubs);
 
-        $tournament->setTournamentGroups($clubs, $competitionId, $seasonId);
+        $tournament->createTournamentGroups($clubs, $competitionId, $seasonId);
     }
 
     /**
