@@ -2,6 +2,7 @@
 
 namespace Services\CompetitionService\Tournament;
 
+use App\Models\Competition\Competition;
 use Services\MatchService\Factories\MatchFactory;
 use App\Repositories\CompetitionRepository;
 use Services\CompetitionService\CompetitionsConfig\TournamentConfig;
@@ -91,52 +92,10 @@ class Tournament
     }
 
     /**
-     * @param int $firstTeamId
-     * @param int $secondTeamId
-     *
-     * @return \stdClass
-     */
-    private function makePairMatches(int $firstTeamId, int $secondTeamId)
-    {
-        $pair   = new \stdClass();
-        $match1 = new \stdClass();
-        $match2 = new \stdClass();
-
-        $match1->homeTeamId = $firstTeamId;
-        $match1->awayTeamId = $secondTeamId;
-        $match2->homeTeamId = $secondTeamId;
-        $match2->awayTeamId = $firstTeamId;
-
-        $pair->match1   = $match1;
-        $pair->match2   = $match2;
-        $pair->winner   = null;
-        $pair->match1Id = null;
-        $pair->match2Id = null;
-
-        return $pair;
-    }
-
-    /**
-     * @return array
-     */
-    public function setNextRoundPairs(): array
-    {
-        $clubsCount = count($this->clubs);
-        $halfSize   = ($clubsCount / 2);
-        $pairs      = [];
-
-        for ($i = 0, $k = $clubsCount - 1; $i < $halfSize; $i++, $k--) {
-            $pairs[] = $this->makePairMatches($this->clubs[$i], $this->clubs[$k]);
-        }
-
-        return $pairs;
-    }
-
-    /**
      * @param int  $competitionId
      * @param bool $startDate
      */
-    public function populateTournamentFixtures(int $competitionId, $startDate = false)
+    public function populateTournamentFixtures(int $competitionId, $startDate = false): Tournament
     {
         $matchFactory     = new MatchFactory();
         $tournamentConfig = new TournamentConfig();
@@ -176,6 +135,38 @@ class Tournament
         }
 
         $this->competitionRepository->insertTournamentKnockoutSummary($competitionId, $this->summary);
+
+        return $this;
+    }
+
+    public function assignSeason(int $seasonId, int $competitionId)
+    {
+        $competition = Competition::find($competitionId);
+
+        foreach ($this->clubs as $clubId) {
+            $competition->seasons()->attach(
+                $seasonId,
+                [
+                    'club_id' => $clubId,
+                ]
+            );
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function setNextRoundPairs(): array
+    {
+        $clubsCount = count($this->clubs);
+        $halfSize   = ($clubsCount / 2);
+        $pairs      = [];
+
+        for ($i = 0, $k = $clubsCount - 1; $i < $halfSize; $i++, $k--) {
+            $pairs[] = $this->makePairMatches($this->clubs[$i], $this->clubs[$k]);
+        }
+
+        return $pairs;
     }
 
     /**
@@ -183,11 +174,12 @@ class Tournament
      * @param int   $competitionId
      * @param int   $seasonId
      */
-    public function setTournamentGroups(array $clubs, int $competitionId, int $seasonId)
+    public function createTournamentGroups(array $clubs, int $competitionId, int $seasonId)
     {
         $tournamentConfig = new TournamentConfig();
         $this->populateTournamentGroups($competitionId);
         $mappedTeams = $this->competitionRepository->getTeamsMappedByTournamentGroup($competitionId);
+        $competition = Competition::find($competitionId);
 
         foreach ($mappedTeams as $group => $teams) {
             $carbonCopy     = $tournamentConfig->getStartDate()->copy();
@@ -196,6 +188,15 @@ class Tournament
             $leagueFixtures = $league->generateLeagueGames();
 
             $league->populateLeagueFixtures($leagueFixtures, $competitionId, $firstRoundDate, 2);
+
+            foreach ($teams as $team) {
+                $competition->seasons()->attach(
+                    $seasonId,
+                    [
+                        'club_id' => $team,
+                    ]
+                );
+            }
         }
     }
 
@@ -232,5 +233,31 @@ class Tournament
 
             $counter++;
         }
+    }
+
+    /**
+     * @param int $firstTeamId
+     * @param int $secondTeamId
+     *
+     * @return \stdClass
+     */
+    private function makePairMatches(int $firstTeamId, int $secondTeamId): \stdClass
+    {
+        $pair   = new \stdClass();
+        $match1 = new \stdClass();
+        $match2 = new \stdClass();
+
+        $match1->homeTeamId = $firstTeamId;
+        $match1->awayTeamId = $secondTeamId;
+        $match2->homeTeamId = $secondTeamId;
+        $match2->awayTeamId = $firstTeamId;
+
+        $pair->match1   = $match1;
+        $pair->match2   = $match2;
+        $pair->winner   = null;
+        $pair->match1Id = null;
+        $pair->match2Id = null;
+
+        return $pair;
     }
 }
