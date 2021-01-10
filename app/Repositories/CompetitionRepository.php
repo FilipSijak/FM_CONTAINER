@@ -65,6 +65,38 @@ class CompetitionRepository
         return $clubs;
     }
 
+    public function getRelegatedClubsByCompetition(int $competitionId, int $seasonId)
+    {
+        DB::select(
+            "
+                SELECT
+                    club_id
+                FROM competition_points
+                WHERE competition_id = :competitionId
+                AND season_id = :seasonId
+                ORDER BY points ASC
+                LIMIT 2
+            ",
+            ["competitionId" => $competitionId, "seasonId" => $seasonId]
+        );
+    }
+
+    public function getPromotedClubsByCompetition(int $competitionId, int $seasonId)
+    {
+        DB::select(
+            "
+                SELECT
+                    club_id
+                FROM competition_points
+                WHERE competition_id = :competitionId
+                AND season_id = :seasonId
+                ORDER BY points DESC
+                LIMIT 2
+            ",
+            ["competitionId" => $competitionId, "seasonId" => $seasonId]
+        );
+    }
+
     /**
      * Gets all the scheduled games for all competitions which need to be simulated
      *

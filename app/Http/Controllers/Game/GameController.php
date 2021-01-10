@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Game;
 
+use App\GameEngine\GameContainer;
 use App\GameEngine\Interfaces\GameContainerInterface;
 use App\Http\Controllers\CoreController;
 use App\Models\Game\Game;
@@ -36,38 +37,33 @@ class GameController extends CoreController
      * @var NewsRepositoryInterface
      */
     private $newsRepository;
+    private $season;
 
     /**
      * GameController constructor.
      *
      * @param Request                   $request
-     * @param $
      * @param SeasonRepositoryInterface $seasonRepository
-     * @param GameContainerInterface    $gameContainer
      * @param NewsRepositoryInterface   $newsRepository
      */
     public function __construct(
         Request $request,
         SeasonRepositoryInterface $seasonRepository,
-        GameContainerInterface $gameContainer,
         NewsRepositoryInterface $newsRepository
     ) {
         parent::__construct($request);
 
-        $this->seasonRepository    = $seasonRepository;
-        $this->gameContainer       = $gameContainer;
-        $this->newsRepository      = $newsRepository;
+        $this->seasonRepository = $seasonRepository;
+        $this->newsRepository   = $newsRepository;
+        $this->season           = $seasonRepository->getCurrentSeasonByGameId($this->game->id);
+        $this->gameContainer    = new GameContainer($this->game, $this->season);
     }
 
     /**
      * Get current news for the day
-     *
-     * @param Game $game
      */
     public function news()
     {
-        $this->gameContainer->setGame($this->game)->currentNews();
-
         //get news
         $this->newsRepository->getCurrentNews();
 
@@ -83,7 +79,7 @@ class GameController extends CoreController
 
     public function matchDay()
     {
-        $match = $this->gameContainer->setGame($this->game)->userMatch();
+        $match = $this->gameContainer->userMatch();
     }
 
     /**
@@ -95,6 +91,6 @@ class GameController extends CoreController
     {
         // @TODO check if all the games were simulated to proceed
 
-        $this->gameContainer->setGame($this->game)->moveForward();
+        $this->gameContainer->moveForward();
     }
 }
