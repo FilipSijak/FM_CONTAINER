@@ -12,22 +12,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $path = 'database/countries.sql';
+        $path = 'database/base_countries.sql';
         DB::unprepared(file_get_contents($path));
 
-        $path = 'database/cities.sql';
+        $path = 'database/base_cities.sql';
         DB::unprepared(file_get_contents($path));
 
-        $path = 'database/clubs.sql';
+        $path = 'database/base_clubs.sql';
         DB::unprepared(file_get_contents($path));
 
-        $path = 'database/stadiums.sql';
+        $path = 'database/base_stadiums.sql';
         DB::unprepared(file_get_contents($path));
 
-        $path = 'database/competitions.sql';
+        $path = 'database/base_competitions.sql';
         DB::unprepared(file_get_contents($path));
 
         $path = 'database/positions.sql';
+        DB::unprepared(file_get_contents($path));
+
+        $path = 'database/competition_hierarchy.sql';
         DB::unprepared(file_get_contents($path));
 
         if (env('APP_ENV') == 'local') {

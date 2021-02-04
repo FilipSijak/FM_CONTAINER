@@ -3,7 +3,6 @@
 namespace App\GameEngine\GameCreation;
 
 use App\Factories\Club\BalanceFactory;
-use Services\CompetitionService\Factories\SeasonFactory;
 use App\Factories\Game\GameFactory;
 use App\GameEngine\Interfaces\CreateGameInterface;
 use App\Models\Club\Club;
@@ -16,7 +15,9 @@ use App\Models\Game\BaseStadium;
 use App\Repositories\CompetitionRepository;
 use Carbon\Carbon;
 use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
+use Services\CompetitionService\CompetitionsConfig\TournamentConfig;
 use Services\CompetitionService\CompetitionService;
+use Services\CompetitionService\Factories\SeasonFactory;
 use Services\GameService\GameData\GameInitialDataSeed;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 use Services\PeopleService\Interfaces\PeopleServiceInterface;
@@ -45,6 +46,10 @@ class CreateGame implements CreateGameInterface
      * @var CompetitionService
      */
     private $competitionService;
+    /**
+     * @var Carbon|\Carbon\CarbonImmutable
+     */
+    private $firstSeasonStartDate;
 
     /**
      * CreateGame constructor.
@@ -55,9 +60,8 @@ class CreateGame implements CreateGameInterface
     {
         $this->userId                         = $userId;
         $this->firstSeasonFirstRoundStartDate = Carbon::create((int)date("Y"), 8, 15);
+        $this->firstSeasonStartDate           = Carbon::create((int)date("Y"), 8, 15);
         $this->competitionService             = new CompetitionService();
-
-        return $this;
     }
 
     /**
@@ -98,23 +102,25 @@ class CreateGame implements CreateGameInterface
     /**
      * @return $this
      */
-    private function assignCompetitionsToSeason()
+    private function assignCompetitionsToSeason(): CreateGame
     {
         $competitions          = Competition::all();
         $competitionRepository = new CompetitionRepository();
+        $tournamentConfig = new TournamentConfig();
+        $seasonStartDate = $tournamentConfig->getStartDate()->format('Y-m-d');
 
         foreach ($competitions as $competition) {
             if ($competition->type == 'league' || ($competition->type == 'tournament' && $competition->groups)) {
                 if ($competition->type == 'league') {
                     $clubs = $competitionRepository->getBaseClubsByCompetition($competition->id);
-                    $this->competitionService->makeLeague($clubs, $competition->id, $this->season->id);
+                    $this->competitionService->makeLeague($clubs, $competition->id, $this->season->id, $seasonStartDate);
                 } else {
                     $clubs = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition->id);
-                    $this->competitionService->makeTournamentGroupStage($clubs, $competition->id, $this->season->id);
+                    $this->competitionService->makeTournamentGroupStage($clubs, $competition->id, $this->season->id, $seasonStartDate);
                 }
             } else {
                 $clubs = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition->id);
-                $this->competitionService->makeTournament($clubs, $competition->id, $this->season->id);
+                $this->competitionService->makeTournament($clubs, $competition->id, $this->season->id, $seasonStartDate);
             }
         }
 
@@ -126,9 +132,11 @@ class CreateGame implements CreateGameInterface
      *
      * @return $this
      */
-    private function assignSeasonToGame(SeasonFactory $seasonFactory)
+    private function assignSeasonToGame(SeasonFactory $seasonFactory): CreateGame
     {
-        $this->season = $seasonFactory->make($this->gameId);
+        $firstSeasonStartEndDate = $this->firstSeasonStartDate->copy()->add('1 year');
+
+        $this->season = $seasonFactory->make($this->gameId, $this->firstSeasonStartDate, $firstSeasonStartEndDate);
 
         $this->season->save();
 
@@ -138,7 +146,7 @@ class CreateGame implements CreateGameInterface
     /**
      * @return $this
      */
-    private function assignBalancesToClubs()
+    private function assignBalancesToClubs(): CreateGame
     {
         $balanceFactory = new BalanceFactory();
 
@@ -156,7 +164,7 @@ class CreateGame implements CreateGameInterface
      *
      * @return CreateGame
      */
-    private function assignClubStaff(PeopleServiceInterface $peopleService)
+    private function assignClubStaff(PeopleServiceInterface $peopleService): CreateGame
     {
         foreach ($this->clubs as $club) {
             $manager = $peopleService->setPersonConfiguration($club->rank, $this->gameId, PersonTypes::MANAGER)
@@ -173,7 +181,7 @@ class CreateGame implements CreateGameInterface
      *
      * @return $this
      */
-    private function assignPlayersToClubs(PeopleServiceInterface $peopleService)
+    private function assignPlayersToClubs(PeopleServiceInterface $peopleService): CreateGame
     {
         $clubPeoplePotential = new InitialClubPeoplePotential();
 
@@ -194,7 +202,7 @@ class CreateGame implements CreateGameInterface
     /**
      * @return $this
      */
-    private function setAllClubs()
+    private function setAllClubs(): CreateGame
     {
         $this->clubs = Club::all();
 
@@ -206,7 +214,7 @@ class CreateGame implements CreateGameInterface
      *
      * @return $this
      */
-    private function populateFromBaseTables(GameInitialDataSeedInterface $gameInitialDataSeed)
+    private function populateFromBaseTables(GameInitialDataSeedInterface $gameInitialDataSeed): CreateGame
     {
         $gameInitialDataSeed->seedFromBaseTables($this->gameId);
 
@@ -216,7 +224,7 @@ class CreateGame implements CreateGameInterface
     /**
      * @return $this
      */
-    private function storeGame()
+    private function storeGame(): CreateGame
     {
         $gameFactory = new GameFactory();
 
@@ -232,7 +240,7 @@ class CreateGame implements CreateGameInterface
      *
      * @return $this
      */
-    public function setClub(int $clubId)
+    public function setClub(int $clubId): CreateGame
     {
         $this->clubId = $clubId;
 

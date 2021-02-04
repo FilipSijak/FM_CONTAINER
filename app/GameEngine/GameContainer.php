@@ -103,6 +103,12 @@ class GameContainer implements GameContainerInterface
             $seasonEnd->processSeasonEnding();
         }
 
+        //check if season start
+        if ($this->season->end_date == $currentGameDate->format('Y-m-d')) {
+            $seasonStart = new SeasonStart($this->game->id, $this->season);
+            $seasonStart->processSeasonStart();
+        }
+
         // update state (update game date)
         $this->game->game_date = $currentGameDate->addDay()->format('Y-m-d');
 

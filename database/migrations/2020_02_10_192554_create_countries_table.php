@@ -22,7 +22,8 @@ class CreateCountriesTable extends Migration
             $table->integer('population');
             $table->integer('gdp')->nullable();
             $table->integer('gdpcapita')->nullable();
-            $table->string('continent');
+            $table->string('continent')->nullable();
+            $table->integer('region')->nullable();
         });
     }
 

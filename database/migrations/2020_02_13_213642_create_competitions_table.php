@@ -20,8 +20,8 @@ class CreateCompetitionsTable extends Migration
             $table->string('country_code');
             $table->integer('rank');
             $table->string('type');
-            $table->integer('clubs_number');
             $table->integer('groups')->default(0);
+            $table->integer('clubs_number');
         });
     }
 

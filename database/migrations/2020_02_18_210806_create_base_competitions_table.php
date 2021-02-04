@@ -20,6 +20,7 @@ class CreateBaseCompetitionsTable extends Migration
             $table->integer('rank');
             $table->string('type');
             $table->integer('groups');
+            $table->integer('clubs_number');
         });
     }
 

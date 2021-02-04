@@ -6,14 +6,13 @@ use App\Factories\Stadium\StadiumFactory;
 use App\Models\Club\Club;
 use App\Models\Competition\Competition;
 use App\Models\Game\BaseCities;
+use App\Models\Game\BaseClubs;
+use App\Models\Game\BaseCompetitions;
+use App\Models\Game\BaseCountries;
 use App\Models\Game\BaseStadium;
 use App\Models\Game\City;
 use App\Models\Game\Country;
 use App\Models\Game\Game;
-use App\Models\Game\BaseClubs;
-use App\Models\Game\BaseCompetitions;
-use App\Models\Game\BaseCountries;
-use App\Models\Stadium\Stadium;
 use Services\GameService\Interfaces\GameInitialDataSeedInterface;
 
 class GameInitialDataSeed implements GameInitialDataSeedInterface
@@ -118,6 +117,7 @@ class GameInitialDataSeed implements GameInitialDataSeedInterface
                 $competition->rank         = $baseCompetition->rank;
                 $competition->type         = $baseCompetition->type;
                 $competition->groups       = $baseCompetition->groups;
+                $competition->clubs_number = $baseCompetition->clubs_number;
 
 
                 $competition->save();
