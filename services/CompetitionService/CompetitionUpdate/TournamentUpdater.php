@@ -2,6 +2,7 @@
 
 namespace Services\CompetitionService\CompetitionUpdate;
 
+use Services\CompetitionService\CompetitionsConfig\TournamentConfig;
 use Services\MatchService\Factories\MatchFactory;
 use App\Models\Club\Club;
 use App\Models\Competition\Match;
@@ -46,7 +47,7 @@ class TournamentUpdater
     /**
      * @return $this
      */
-    public function updatePointsTable()
+    public function updatePointsTable(): TournamentUpdater
     {
         if ($this->competitionRepository->tournamentGroupsFinished($this->matches[0])) {
             // update competition do be tournament
@@ -67,7 +68,11 @@ class TournamentUpdater
             }
 
             $tournament = new Tournament($knockoutClubs);
-            $tournament->createTournament()->populateTournamentFixtures($this->matches[0]["competition_id"], true);
+            $tournamentConfig = new TournamentConfig();
+            $tournament->createTournament()->populateTournamentFixtures(
+                $this->matches[0]["competition_id"],
+                $tournamentConfig->getWinterKnockoutStartDate()->format('Y-m-d')
+            );
         } else {
             // foreach match, take winner/draw and find club/clubs in the tournament_groups table
             // update each winner/draw with points

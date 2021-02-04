@@ -3,6 +3,7 @@
 namespace Services\CompetitionService\Tournament;
 
 use App\Models\Competition\Competition;
+use Illuminate\Support\Carbon;
 use Services\MatchService\Factories\MatchFactory;
 use App\Repositories\CompetitionRepository;
 use Services\CompetitionService\CompetitionsConfig\TournamentConfig;
@@ -92,21 +93,18 @@ class Tournament
     }
 
     /**
-     * @param int  $competitionId
-     * @param bool $startDate
+     * @param int    $competitionId
+     * @param string $startDate
+     *
+     * @return Tournament
      */
-    public function populateTournamentFixtures(int $competitionId, $startDate = false): Tournament
+    public function populateTournamentFixtures(int $competitionId, string $startDate): Tournament
     {
         $matchFactory     = new MatchFactory();
-        $tournamentConfig = new TournamentConfig();
+        $carbonDate = Carbon::parse($startDate);
 
-        if (!$startDate) {
-            $firstGame  = $tournamentConfig->getStartDate()->copy()->modify("next Tuesday");
-            $secondGame = $firstGame->copy()->addWeek();
-        } else {
-            $firstGame  = $tournamentConfig->getWinterKnockoutStartDate()->copy()->modify("next Tuesday");
-            $secondGame = $firstGame->copy()->addWeek();
-        }
+        $firstGame  = $carbonDate->copy()->modify("next Tuesday");
+        $secondGame = $firstGame->copy()->addWeek();
 
 
         $firstRoundPairs = array_merge(
@@ -174,15 +172,14 @@ class Tournament
      * @param int   $competitionId
      * @param int   $seasonId
      */
-    public function createTournamentGroups(array $clubs, int $competitionId, int $seasonId)
+    public function createTournamentGroups(array $clubs, int $competitionId, int $seasonId, string $date)
     {
-        $tournamentConfig = new TournamentConfig();
         $this->populateTournamentGroups($competitionId);
         $mappedTeams = $this->competitionRepository->getTeamsMappedByTournamentGroup($competitionId);
         $competition = Competition::find($competitionId);
 
         foreach ($mappedTeams as $group => $teams) {
-            $carbonCopy     = $tournamentConfig->getStartDate()->copy();
+            $carbonCopy     = Carbon::parse($date)->copy();
             $firstRoundDate = $carbonCopy->modify("next Tuesday");
             $league         = new League($teams, $competitionId, $seasonId);
             $leagueFixtures = $league->generateLeagueGames();

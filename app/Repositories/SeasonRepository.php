@@ -14,6 +14,6 @@ class SeasonRepository implements SeasonRepositoryInterface
 
     public function getCurrentSeasonByGameId(int $gameId)
     {
-        return Season::where('game_id', $gameId)->first();
+        return Season::where('game_id', $gameId)->get()->last();
     }
 }

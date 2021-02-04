@@ -11,41 +11,44 @@ use Services\CompetitionService\Tournament\Tournament;
 class CompetitionService implements CompetitionServiceInterface
 {
     /**
-     * @param array $clubs
-     * @param int   $competitionId
-     * @param int   $seasonId
+     * @param array  $clubs
+     * @param int    $competitionId
+     * @param int    $seasonId
+     * @param string $date
      */
-    public function makeLeague(array $clubs, int $competitionId, int $seasonId)
+    public function makeLeague(array $clubs, int $competitionId, int $seasonId, string $date)
     {
         $league = new League($clubs, $competitionId, $seasonId);
 
-        $league->setLeagueCompetition();
+        $league->setLeagueCompetition($date);
     }
 
     /**
-     * @param array $clubs
-     * @param int   $competitionId
-     * @param int   $seasonId
+     * @param array  $clubs
+     * @param int    $competitionId
+     * @param int    $seasonId
+     * @param string $date
      */
-    public function makeTournament(array $clubs, int $competitionId, int $seasonId)
+    public function makeTournament(array $clubs, int $competitionId, int $seasonId, string $date)
     {
         $tournament = new Tournament($clubs);
 
         $tournament->createTournament()
-                   ->populateTournamentFixtures($competitionId)
+                   ->populateTournamentFixtures($competitionId, $date)
                    ->assignSeason($seasonId, $competitionId);
     }
 
     /**
-     * @param array $clubs
-     * @param int   $competitionId
-     * @param int   $seasonId
+     * @param array  $clubs
+     * @param int    $competitionId
+     * @param int    $seasonId
+     * @param string $date
      */
-    public function makeTournamentGroupStage(array $clubs, int $competitionId, int $seasonId)
+    public function makeTournamentGroupStage(array $clubs, int $competitionId, int $seasonId, string $date)
     {
         $tournament = new Tournament($clubs);
 
-        $tournament->createTournamentGroups($clubs, $competitionId, $seasonId);
+        $tournament->createTournamentGroups($clubs, $competitionId, $seasonId, $date);
     }
 
     /**

@@ -54,3 +54,4 @@ Route::group(
 );
 
 Route::get('/test', 'TestController@index');
+Route::get('/simulateseason', 'TestController@simulateSeason');

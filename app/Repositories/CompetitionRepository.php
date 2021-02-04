@@ -39,13 +39,109 @@ class CompetitionRepository
         $clubs = [];
 
         foreach ($result as $club) {
-            $clubs[] = $club->club_id;
+            $clubs[$club->club_id] = $club->club_id;
         }
 
         return $clubs;
     }
 
-    public function getInitialTournamentTeamsBasedOnRanks($competition = null)
+    /**
+     * @param int $lastSeasonId
+     *
+     * @return array
+     */
+    public function setEuropaLeagueTeams(int $lastSeasonId): array
+    {
+        /*
+         * hardcoded for now until side competitions are added
+         * 16 teams, 8 knockout pairs
+         * 4 competitions 4 clubs each
+         */
+
+        $competitions       = [1, 2, 3, 4];
+        $clubsByCompetition = [];
+
+        foreach ($competitions as $competitionId) {
+            $clubs = DB::select(
+                "
+                SELECT club_id FROM competition_points
+	            WHERE competition_id = :competitionId
+                AND season_id = :seasonId
+	            ORDER BY points DESC
+	            LIMIT 2 OFFSET 4
+	            ",
+                ["competitionId" => $competitionId, "seasonId" => $lastSeasonId]
+            );
+
+            foreach ($clubs as $club) {
+                $clubsByCompetition[$competitionId][] = $club->club_id;
+            }
+        }
+
+        return $clubsByCompetition;
+    }
+
+    /**
+     * @param int $lastSeasonId
+     *
+     * @return array
+     */
+    public function setChampionsLeagueTeams(int $lastSeasonId): array
+    {
+        /*
+         * hardcoded for now until side competitions are added
+         * 16 teams 4 groups
+         * 4 knockout pairs after group stage
+         * 4 competitions 4 clubs each
+         */
+
+        $competitions       = [1, 2, 3, 4];
+        $clubsByCompetition = [];
+
+        foreach ($competitions as $competitionId) {
+            $clubs = DB::select(
+                "
+                SELECT club_id FROM competition_points
+	            WHERE competition_id = :competitionId
+                AND season_id = :seasonId
+	            ORDER BY points DESC
+	            LIMIT 24
+	            ",
+                ["competitionId" => $competitionId, "seasonId" => $lastSeasonId]
+            );
+
+            foreach ($clubs as $club) {
+                $clubsByCompetition[$competitionId][] = $club->club_id;
+            }
+        }
+
+        return $clubsByCompetition;
+    }
+
+    /**
+     * @param int $competitionId
+     *
+     * @return array
+     */
+    public function getCompetitionHierarchy(int $competitionId): array
+    {
+        $result = DB::select(
+            "
+                SELECT * FROM competition_hierarchy
+                WHERE competition_id = :competition
+            ",
+            ["competition" => $competitionId]
+        );
+
+        return $result;
+    }
+
+    /**
+     * @param null $competition
+     *
+     * @return array
+     */
+    public function getInitialTournamentTeamsBasedOnRanks($competition = null): array
     {
         /**
          * @TODO
@@ -67,7 +163,7 @@ class CompetitionRepository
 
     public function getRelegatedClubsByCompetition(int $competitionId, int $seasonId)
     {
-        DB::select(
+        $result = DB::select(
             "
                 SELECT
                     club_id
@@ -79,11 +175,13 @@ class CompetitionRepository
             ",
             ["competitionId" => $competitionId, "seasonId" => $seasonId]
         );
+
+        return $result;
     }
 
     public function getPromotedClubsByCompetition(int $competitionId, int $seasonId)
     {
-        DB::select(
+        return DB::select(
             "
                 SELECT
                     club_id
@@ -518,6 +616,11 @@ class CompetitionRepository
         );
     }
 
+    /**
+     * @param int $competitionId
+     * @param int $group
+     * @param     $clubId
+     */
     public function insertTournamentGroups(int $competitionId, int $group, $clubId)
     {
         DB::insert(
@@ -532,5 +635,45 @@ class CompetitionRepository
                 'points'        => 0,
             ]
         );
+    }
+
+    /**
+     * @param int   $seasonId
+     * @param array $clubsByCompetitions
+     */
+    public function bulkSeasonPointsInsert(int $seasonId, array $clubsByCompetitions)
+    {
+        $sqlInsert = "INSERT INTO competition_points (competition_id, season_id, club_id, points) VALUES";
+
+        foreach ($clubsByCompetitions as $competitionId => $clubs) {
+            foreach ($clubs as $clubId) {
+                $sqlInsert .= " (" . $competitionId . ", " . $seasonId . ", " . $clubId . ", 0),";
+            }
+        }
+
+        $sqlInsert = substr($sqlInsert, 0, -1);
+        $sqlInsert .= ";";
+
+        DB::raw($sqlInsert);
+    }
+
+    /**
+     * @param int   $seasonId
+     * @param array $clubsByCompetitions
+     */
+    public function bulkCompetitionsSeasonsInsert(int $seasonId, array $clubsByCompetitions)
+    {
+        $sqlInsert = "INSERT INTO competition_season (competition_id, season_id, club_id) VALUES";
+
+        foreach ($clubsByCompetitions as $competitionId => $clubs) {
+            foreach ($clubs as $clubId) {
+                $sqlInsert .= " (" . $competitionId . ", " . $seasonId . ", " . $clubId . "),";
+            }
+        }
+
+        $sqlInsert = substr($sqlInsert, 0, -1);
+        $sqlInsert .= ";";
+
+        DB::raw($sqlInsert);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Services\CompetitionService\League;
 
+use Illuminate\Support\Carbon;
 use Services\MatchService\Factories\MatchFactory;
 use Services\CompetitionService\Factories\PointsFactory;
 use App\Models\Competition\Competition;
@@ -28,21 +29,29 @@ class League
      */
     public function __construct(array $clubs, int $competitionId, int $seasonId)
     {
-        $this->clubs                = $clubs;
+        $this->clubs                = array_values($clubs);
         $this->competitionId        = $competitionId;
         $this->seasonId             = $seasonId;
         $this->competitionSize      = count($this->clubs);
         $this->numberOfGamesInRound = $this->competitionSize / 2;
-        $this->fixed                = !empty($this->clubs) ? $this->clubs[0] : 0;
+
+        $firstClub = 0;
+
+        if (!empty($this->clubs)) {
+            $firstKey = array_key_first($this->clubs);
+
+            $firstClub = $this->clubs[$firstKey];
+        }
+
+        $this->fixed = $firstClub;
     }
 
-    public function setLeagueCompetition()
+    public function setLeagueCompetition(string $date)
     {
         $pointsFactory    = new PointsFactory();
-        $tournamentConfig = new TournamentConfig();
         $leagueFixtures   = $this->generateLeagueGames();
-        $carbonCopy       = $tournamentConfig->getStartDate()->copy();
-        $seasonStart      = $carbonCopy->modify("next Sunday");
+        $startDate        = Carbon::parse($date);
+        $seasonStart      = $startDate->modify("next Sunday");
 
         $this->populateLeagueFixtures($leagueFixtures, $this->competitionId, $seasonStart);
 
