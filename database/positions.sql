@@ -1,14 +1,14 @@
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (1, 'Center back', 'CB');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (2, 'Left back', 'LB');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (3, 'Left wingback', 'LWB');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (4, 'Right back', 'RB');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (5, 'Right wingback', 'RWB');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (6, 'Defensive midfield center', 'DMC');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (7, 'Center midfielder', 'CM');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (8, 'Left wing', 'LW');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (9, 'Left forward', 'LF');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (10, 'Attacking midfield center', 'AMC');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (11, 'Right wing', 'RW');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (12, 'Right forward', 'RF');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (13, 'Center forward', 'CF');
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (14, 'Striker', 'ST');
+INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (1, 'Center back', 'CB'),
+(2, 'Left back', 'LB'),
+(3, 'Left wingback', 'LWB'),
+(4, 'Right back', 'RB'),
+(5, 'Right wingback', 'RWB'),
+(6, 'Defensive midfield center', 'DMC'),
+(7, 'Center midfielder', 'CM'),
+(8, 'Left wing', 'LW'),
+(9, 'Left forward', 'LF'),
+(10, 'Attacking midfield center', 'AMC'),
+(11, 'Right wing', 'RW'),
+(12, 'Right forward', 'RF'),
+(13, 'Center forward', 'CF'),
+(14, 'Striker', 'ST');

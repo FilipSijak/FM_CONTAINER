@@ -3,23 +3,34 @@
 namespace Services\PeopleService\PersonCreate\Types;
 
 use App\Models\Player\Player as PlayerModel;
-use App\Models\Player\Position;
 use stdClass;
 
 class PlayerType
 {
     /**
-     * @param stdClass $playerService
+     * @param stdClass $playerAttributes
      * @param int      $gameId
      *
      * @return PlayerModel
      */
-    public function create(stdClass $playerService, int $gameId): PlayerModel
+    public function create(stdClass $playerAttributes, int $gameId): PlayerModel
     {
-        $player = new PlayerModel();
+        $player              = new PlayerModel();
+        $generatedPositions  = [];
+        $potentialByCategory = [];
 
-        foreach ($playerService as $field => $value) {
-            if ($field == 'potentialByCategory' || $field == 'playerPositions') {
+        foreach ($playerAttributes as $field => $value) {
+            if ($field == 'potentialByCategory') {
+                $potentialByCategory[$field] = $value;
+
+                continue;
+            }
+
+            if ($field == 'playerPositions') {
+                foreach ($playerAttributes->playerPositions as $alias => $grade) {
+                    $generatedPositions[$alias] = $grade;
+                }
+
                 continue;
             }
 
@@ -28,15 +39,8 @@ class PlayerType
 
         $player->game_id = $gameId;
 
-        $player->save();
-
-        foreach ($playerService->playerPositions as $alias => $grade) {
-            $position = Position::where('alias', $alias)->first();
-            $player->positions()->attach($position->id, [
-                'game_id'        => $gameId,
-                'position_grade' => $grade,
-            ]);
-        }
+        $player->setPositions($generatedPositions);
+        $player->setAttributesCategoriesPotential($potentialByCategory);
 
         return $player;
     }

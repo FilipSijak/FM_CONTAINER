@@ -2,7 +2,10 @@
 
 namespace Services\CompetitionService\League;
 
+use App\Models\Club\Club;
+use App\Repositories\Match\MatchRepository;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Services\MatchService\Factories\MatchFactory;
 use Services\CompetitionService\Factories\PointsFactory;
 use App\Models\Competition\Competition;
@@ -160,7 +163,7 @@ class League
     /**
      * @return array
      */
-    private function swapTeamsForRematch()
+    private function swapTeamsForRematch(): array
     {
         $rematchGames = [];
 
@@ -181,20 +184,7 @@ class League
      */
     public function populateLeagueFixtures(array $leagueFixtures, $competitionId, $startDate, $roundLength = 10)
     {
-        $matchFactory = new MatchFactory();
-        $countRound   = $roundLength;
-
-        foreach ($leagueFixtures as $fixture) {
-            $nextWeek = $countRound % $roundLength == 0;
-
-            $matchFactory->make(
-                $competitionId,
-                $fixture->homeTeamId,
-                $fixture->awayTeamId,
-                $nextWeek ? $startDate->addWeek() : $startDate
-            );
-
-            $countRound++;
-        }
+        $matchRepository = new MatchRepository();
+        $matchRepository->bulkInsertLeagueMatches($leagueFixtures, $competitionId, $startDate, $roundLength);
     }
 }
