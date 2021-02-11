@@ -5,6 +5,7 @@ namespace Services\PeopleService;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Services\PeopleService\Interfaces\PeopleServiceInterface;
 use Services\PeopleService\PersonCreate\PersonFactory;
+use Services\PeopleService\PlayerPosition\PlayerPosition;
 use Services\PeopleService\Regens\PlayerRegen\GeneratePlayerAttributes;
 use Services\PeopleService\Regens\StaffRegen\GenerateManagerAttributes;
 
@@ -32,7 +33,7 @@ class PeopleService implements PeopleServiceInterface
      *
      * @return $this
      */
-    public function setPersonConfiguration(int $personPotential, int $gameId, int $personType)
+    public function setPersonConfiguration(int $personPotential, int $gameId, int $personType): PeopleService
     {
         $this->personPotential = $personPotential;
         $this->gameId          = $gameId;
@@ -65,5 +66,17 @@ class PeopleService implements PeopleServiceInterface
         }
 
         return $person;
+    }
+
+    /**
+     * @param array $playerAttributes
+     *
+     * @return array
+     */
+    public function generatePlayerPositionList(array $playerAttributes): array
+    {
+        $playerPosition = new PlayerPosition();
+
+        return $playerPosition->getInitialPositionsBasedOnAttributes($playerAttributes);
     }
 }

@@ -13,6 +13,7 @@ use App\Models\Game\BaseCompetitions;
 use App\Models\Game\BaseCountries;
 use App\Models\Game\BaseStadium;
 use App\Repositories\CompetitionRepository;
+use App\Repositories\Player\PlayerRepository;
 use Carbon\Carbon;
 use Services\ClubService\GeneratePeople\InitialClubPeoplePotential;
 use Services\CompetitionService\CompetitionsConfig\TournamentConfig;
@@ -106,8 +107,8 @@ class CreateGame implements CreateGameInterface
     {
         $competitions          = Competition::all();
         $competitionRepository = new CompetitionRepository();
-        $tournamentConfig = new TournamentConfig();
-        $seasonStartDate = $tournamentConfig->getStartDate()->format('Y-m-d');
+        $tournamentConfig      = new TournamentConfig();
+        $seasonStartDate       = $tournamentConfig->getStartDate()->format('Y-m-d');
 
         foreach ($competitions as $competition) {
             if ($competition->type == 'league' || ($competition->type == 'tournament' && $competition->groups)) {
@@ -184,16 +185,21 @@ class CreateGame implements CreateGameInterface
     private function assignPlayersToClubs(PeopleServiceInterface $peopleService): CreateGame
     {
         $clubPeoplePotential = new InitialClubPeoplePotential();
+        $playerRepository    = new PlayerRepository();
 
         foreach ($this->clubs as $club) {
             $playerPotentialList = $clubPeoplePotential->getPlayerPotentialListByClubRank($club->rank);
+            $generatedPlayers    = [];
 
             foreach ($playerPotentialList as $playerPotential) {
-                $player = $peopleService->setPersonConfiguration($playerPotential, $this->gameId, PersonTypes::PLAYER)
-                                        ->createPerson();
-
-                $player->clubs()->attach($club->id);
+                $player             = $peopleService->setPersonConfiguration($playerPotential, $this->gameId, PersonTypes::PLAYER)
+                                                    ->createPerson();
+                $generatedPlayers[] = $player;
             }
+
+            $playerRepository->bulkPlayerInsert($this->gameId, $club->id, $generatedPlayers);
+            $players = $playerRepository->bulkAssignmentPlayersToClub($club->id);
+            $playerRepository->bulkAssignmentPlayersPositions($players);
         }
 
         return $this;
