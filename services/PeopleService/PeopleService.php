@@ -2,9 +2,9 @@
 
 namespace Services\PeopleService;
 
-use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Services\PeopleService\Interfaces\PeopleServiceInterface;
 use Services\PeopleService\PersonCreate\PersonFactory;
+use Services\PeopleService\PersonValuation\PlayerValuation;
 use Services\PeopleService\PlayerPosition\PlayerPosition;
 use Services\PeopleService\Regens\PlayerRegen\GeneratePlayerAttributes;
 use Services\PeopleService\Regens\StaffRegen\GenerateManagerAttributes;
@@ -26,6 +26,8 @@ class PeopleService implements PeopleServiceInterface
      */
     private $personPotential;
 
+    private $person = null;
+
     /**
      * @param int $personPotential
      * @param int $gameId
@@ -43,29 +45,42 @@ class PeopleService implements PeopleServiceInterface
     }
 
     /**
-     * @return EloquentModel
+     * @param int $clubRank
+     * @param int $leagueRank
+     *
+     * @return \App\Models\People\Staff|\App\Models\Player\Player
      */
-    public function createPerson(): ?EloquentModel
+    public function createPerson(int $clubRank = null, int $leagueRank = null)
     {
         $personFactory = new PersonFactory($this->gameId);
-        $person        = null;
 
         switch ($this->personType) {
             case PersonTypes::PLAYER:
                 $player              = new GeneratePlayerAttributes($this->personPotential, PersonTypes::PLAYER);
                 $generatedAttributes = $player->generateAttributes();
-                $person              = $personFactory->setAttributes($generatedAttributes)->createPlayer();
+                $this->person        = $personFactory->setAttributes($generatedAttributes)->createPlayer();
+
+                $playerValuation = new PlayerValuation();
+
+                $playerValuation->setPersonValue(
+                    $this->person->getFullPotential(),
+                    $clubRank,
+                    $leagueRank,
+                    $this->person->dob
+                );
+
+                $this->person->value = $playerValuation->getPlayerValue();
 
                 break;
             case PersonTypes::MANAGER:
                 $manager             = new GenerateManagerAttributes($this->personPotential, PersonTypes::MANAGER);
                 $generatedAttributes = $manager->generateAttributes();
-                $person              = $personFactory->setAttributes($generatedAttributes)->createManager();
+                $this->person        = $personFactory->setAttributes($generatedAttributes)->createManager();
 
                 break;
         }
 
-        return $person;
+        return $this->person;
     }
 
     /**

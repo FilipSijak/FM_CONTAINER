@@ -4,7 +4,7 @@ namespace Services\PeopleService\Interfaces;
 
 interface PeopleServiceInterface
 {
-    public function createPerson();
+    public function createPerson(int $clubRank, int $leagueRank);
 
     public function setPersonConfiguration(int $personPotential, int $gameId, int $personType);
 

@@ -7,6 +7,7 @@ use App\Models\Player\Player;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Services\PeopleService\PeopleService;
+use Services\PeopleService\PersonValuation\PlayerValuation;
 
 class PlayerRepository
 {
@@ -39,6 +40,8 @@ class PlayerRepository
 
             $attributesCategories = $player->getAttributeCategoriesPotential();
             $playerInsertSQL      .= "(" . $gameId . ",
+                " . $clubId . ",
+                " . $player->value . ",
                 '" . addslashes($player->first_name) . "',
                 '" . addslashes($player->last_name) . "',
                 '" . $player->country_code . "',
@@ -46,7 +49,6 @@ class PlayerRepository
                 " . $attributesCategories['technical'] . ",
                 " . $attributesCategories['mental'] . ",
                 " . $attributesCategories['physical'] . ",
-                " . $clubId . ",
                 '" . date('Y-m-d') . "',
                 '" . date('Y-m-d') . "',
                 " . $player->corners . ",
@@ -92,28 +94,6 @@ class PlayerRepository
         $playerInsertSQL = substr($playerInsertSQL, 0, -2);
 
         DB::statement($playerInsertSQL);
-    }
-
-    /**
-     * @param int $clubId
-     *
-     * @return mixed
-     */
-    public function bulkAssignmentPlayersToClub(int $clubId)
-    {
-        $players = Player::where('club_id', $clubId)->get();
-
-        $insertSql = "INSERT INTO player_club(player_id, club_id) VALUES";
-
-        foreach ($players as $player) {
-            $insertSql .= "(" . $player->id . ", " . $clubId . "), ";
-        }
-
-        $playerInsertSQL = substr($insertSql, 0, -2);
-
-        DB::statement($playerInsertSQL);
-
-        return $players;
     }
 
     /**
