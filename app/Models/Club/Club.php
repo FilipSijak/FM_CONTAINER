@@ -19,7 +19,7 @@ class Club extends Model
 
     public function players()
     {
-        return $this->belongsToMany('App\Models\Player\Player', 'player_club');
+        return $this->hasMany('App\Models\Player\Player', 'club_id');
     }
 
     public function balance()

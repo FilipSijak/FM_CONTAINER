@@ -13,9 +13,9 @@ class Player extends Model
         return $this->belongsToMany('App\Models\Player\Position');
     }
 
-    public function clubs()
+    public function club()
     {
-        return $this->belongsToMany('App\Models\Club\Club', 'player_club');
+        return $this->belongsTo('App\Models\Club\Club');
     }
 
     public function getTableColumns()
@@ -41,5 +41,14 @@ class Player extends Model
     public function getAttributeCategoriesPotential()
     {
         return $this->attributesCategories["potentialByCategory"];
+    }
+
+    public function getFullPotential()
+    {
+        $categories = $this->attributesCategories["potentialByCategory"];
+
+        return ceil(
+            ($categories["technical"] + $categories["physical"] + $categories["mental"]) / 3
+        );
     }
 }

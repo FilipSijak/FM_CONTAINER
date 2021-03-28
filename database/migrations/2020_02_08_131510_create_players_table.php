@@ -35,6 +35,8 @@ class CreatePlayersTable extends Migration
 
             $table->increments('id');
             $table->integer('game_id');
+            $table->integer('club_id')->nullable();
+            $table->integer('value')->nullable();
             $table->string('first_name', 30);
             $table->string('last_name', 30);
             $table->string('country_code');
@@ -42,7 +44,6 @@ class CreatePlayersTable extends Migration
             $table->integer('technical')->nullable();
             $table->integer('mental')->nullable();
             $table->integer('physical')->nullable();
-            $table->integer('club_id')->nullable();
             $table->date('contract_start')->nullable();
             $table->date('contract_end')->nullable();
 

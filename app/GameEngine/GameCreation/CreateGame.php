@@ -12,6 +12,8 @@ use App\Models\Game\BaseClubs;
 use App\Models\Game\BaseCompetitions;
 use App\Models\Game\BaseCountries;
 use App\Models\Game\BaseStadium;
+use App\Models\Player\Player;
+use App\Repositories\ClubRepository;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\Player\PlayerRepository;
 use Carbon\Carbon;
@@ -93,55 +95,11 @@ class CreateGame implements CreateGameInterface
         $this->storeGame()
              ->populateFromBaseTables($gameInitialDataSeed)
              ->setAllClubs()
+             ->assignSeasonToGame($seasonFactory)
+             ->assignCompetitionsToSeason()
              ->assignPlayersToClubs($peopleService)
              ->assignClubStaff($peopleService)
-             ->assignBalancesToClubs()
-             ->assignSeasonToGame($seasonFactory)
-             ->assignCompetitionsToSeason();
-    }
-
-    /**
-     * @return $this
-     */
-    private function assignCompetitionsToSeason(): CreateGame
-    {
-        $competitions          = Competition::all();
-        $competitionRepository = new CompetitionRepository();
-        $tournamentConfig      = new TournamentConfig();
-        $seasonStartDate       = $tournamentConfig->getStartDate()->format('Y-m-d');
-
-        foreach ($competitions as $competition) {
-            if ($competition->type == 'league' || ($competition->type == 'tournament' && $competition->groups)) {
-                if ($competition->type == 'league') {
-                    $clubs = $competitionRepository->getBaseClubsByCompetition($competition->id);
-                    $this->competitionService->makeLeague($clubs, $competition->id, $this->season->id, $seasonStartDate);
-                } else {
-                    $clubs = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition->id);
-                    $this->competitionService->makeTournamentGroupStage($clubs, $competition->id, $this->season->id, $seasonStartDate);
-                }
-            } else {
-                $clubs = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition->id);
-                $this->competitionService->makeTournament($clubs, $competition->id, $this->season->id, $seasonStartDate);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param SeasonFactory $seasonFactory
-     *
-     * @return $this
-     */
-    private function assignSeasonToGame(SeasonFactory $seasonFactory): CreateGame
-    {
-        $firstSeasonStartEndDate = $this->firstSeasonStartDate->copy()->add('1 year');
-
-        $this->season = $seasonFactory->make($this->gameId, $this->firstSeasonStartDate, $firstSeasonStartEndDate);
-
-        $this->season->save();
-
-        return $this;
+             ->assignBalancesToClubs();
     }
 
     /**
@@ -186,21 +144,68 @@ class CreateGame implements CreateGameInterface
     {
         $clubPeoplePotential = new InitialClubPeoplePotential();
         $playerRepository    = new PlayerRepository();
+        $clubRepository      = new ClubRepository();
 
         foreach ($this->clubs as $club) {
             $playerPotentialList = $clubPeoplePotential->getPlayerPotentialListByClubRank($club->rank);
             $generatedPlayers    = [];
+            $league              = $clubRepository->getLeagueByClub($club->id, 1);
 
             foreach ($playerPotentialList as $playerPotential) {
-                $player             = $peopleService->setPersonConfiguration($playerPotential, $this->gameId, PersonTypes::PLAYER)
-                                                    ->createPerson();
+                $player = $peopleService->setPersonConfiguration($playerPotential, $this->gameId, PersonTypes::PLAYER)
+                                        ->createPerson($club->rank, $league["rank"]);
+
                 $generatedPlayers[] = $player;
             }
 
             $playerRepository->bulkPlayerInsert($this->gameId, $club->id, $generatedPlayers);
-            $players = $playerRepository->bulkAssignmentPlayersToClub($club->id);
+            $players = Player::where('club_id', $club->id)->get();
             $playerRepository->bulkAssignmentPlayersPositions($players);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    private function assignCompetitionsToSeason(): CreateGame
+    {
+        $competitions          = Competition::all();
+        $competitionRepository = new CompetitionRepository();
+        $tournamentConfig      = new TournamentConfig();
+        $seasonStartDate       = $tournamentConfig->getStartDate()->format('Y-m-d');
+
+        foreach ($competitions as $competition) {
+            if ($competition->type == 'league' || ($competition->type == 'tournament' && $competition->groups)) {
+                if ($competition->type == 'league') {
+                    $clubs = $competitionRepository->getBaseClubsByCompetition($competition->id);
+                    $this->competitionService->makeLeague($clubs, $competition->id, $this->season->id, $seasonStartDate);
+                } else {
+                    $clubs = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition->id);
+                    $this->competitionService->makeTournamentGroupStage($clubs, $competition->id, $this->season->id, $seasonStartDate);
+                }
+            } else {
+                $clubs = $competitionRepository->getInitialTournamentTeamsBasedOnRanks($competition->id);
+                $this->competitionService->makeTournament($clubs, $competition->id, $this->season->id, $seasonStartDate);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param SeasonFactory $seasonFactory
+     *
+     * @return $this
+     */
+    private function assignSeasonToGame(SeasonFactory $seasonFactory): CreateGame
+    {
+        $firstSeasonStartEndDate = $this->firstSeasonStartDate->copy()->add('1 year');
+
+        $this->season = $seasonFactory->make($this->gameId, $this->firstSeasonStartDate, $firstSeasonStartEndDate);
+
+        $this->season->save();
 
         return $this;
     }
