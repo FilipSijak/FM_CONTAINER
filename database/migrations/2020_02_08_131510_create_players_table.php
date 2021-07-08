@@ -39,6 +39,8 @@ class CreatePlayersTable extends Migration
             $table->integer('value')->nullable();
             $table->string('first_name', 30);
             $table->string('last_name', 30);
+            $table->integer('potential');
+            $table->string('position');
             $table->string('country_code');
             $table->date('dob')->nullable();
             $table->integer('technical')->nullable();

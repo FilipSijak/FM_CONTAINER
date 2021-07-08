@@ -7,11 +7,11 @@ use stdClass;
 
 class StaffType
 {
-    public function create(stdClass $generatedPersonAttributes, int $gameId, int $personType)
+    public function create(stdClass $generatedPersonAttributes, int $gameId, string $staffType)
     {
         $person          = new StaffModel();
         $person->game_id = $gameId;
-        $person->type    = $personType;
+        $person->type    = $staffType;
 
         foreach ($generatedPersonAttributes as $field => $value) {
             if ($field == 'potentialByCategory') {

@@ -6,7 +6,7 @@ interface PeopleServiceInterface
 {
     public function createPerson(int $clubRank, int $leagueRank);
 
-    public function setPersonConfiguration(int $personPotential, int $gameId, int $personType);
+    public function setPersonConfiguration(\stdClass $personConfig, int $gameId, string $personType);
 
     public function generatePlayerPositionList(array $playerAttributes): array;
 }

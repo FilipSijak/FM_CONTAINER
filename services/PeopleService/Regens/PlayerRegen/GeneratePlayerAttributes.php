@@ -32,6 +32,7 @@ class GeneratePlayerAttributes extends PersonAttributesGenerator
      */
     private $personPotential;
 
+
     /**
      * @return stdClass
      */
@@ -40,9 +41,9 @@ class GeneratePlayerAttributes extends PersonAttributesGenerator
         $this->playerPosition  = new PlayerPosition();
         $this->personPotential = new PersonPotential();
 
-        $this->setCategoriesPotential();
-
         $this->setPlayerPosition();
+
+        $this->setCategoriesPotential();
 
         $this->setInitialAttributes();
 
@@ -54,20 +55,21 @@ class GeneratePlayerAttributes extends PersonAttributesGenerator
     }
 
     /**
+     * Sets player initial main position
+     */
+    protected function setPlayerPosition()
+    {
+        $this->person->position = $this->personConfig->position;
+    }
+
+    /**
      *  Set potential player ability for technical, mental and physical categories
      */
     protected function setCategoriesPotential()
     {
         $this->personPotential->setPersonCategories(PlayerFields::PERSON_ATTRIBUTE_CATEGORIES);
-        $this->person->potentialByCategory = (array)$this->personPotential->calculatePersonPotential($this->rank);
-    }
-
-    /**
-     * Sets player initial main position, this is used later to assign attributes based on this position
-     */
-    private function setPlayerPosition()
-    {
-        $this->generatedPosition = $this->playerPosition->getRandomPosition();
+        $this->person->potentialByCategory = (array)$this->personPotential->calculatePersonPotential($this->personConfig->potential);
+        $this->person->potential           = $this->personConfig->potential;
     }
 
     /**
@@ -77,7 +79,7 @@ class GeneratePlayerAttributes extends PersonAttributesGenerator
     {
         $initialAttributes = new InitialAttributes(
             $this->person->potentialByCategory,
-            $this->generatedPosition
+            $this->personConfig->position
         );
 
         $this->playerInitialAttributes = $initialAttributes->getAllAttributeValues();

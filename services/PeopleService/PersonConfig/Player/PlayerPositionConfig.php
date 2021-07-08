@@ -8,93 +8,95 @@ namespace Services\PeopleService\PersonConfig\Player;
 
 class PlayerPositionConfig
 {
+    const PLAYER_POSITIONS = ['CB', 'LB', 'LWB', 'RB', 'RWB', 'DMC', 'CM', 'AMC', 'LW', 'LF', 'RW', 'RF', 'CF', 'ST'];
+
     const POSITION_TECH_ATTRIBUTES = [
         'CB'  => [
-            'primary'   => ['heading', 'tackling'],
-            'secondary' => [],
+            'primary'   => ['marking', 'tackling'],
+            'secondary' => ['heading'],
         ],
         'LB'  => [
-            'primary'   => ['crossing'],
-            'secondary' => ['tackling', 'passing'],
+            'primary'   => ['crossing', 'tackling'],
+            'secondary' => ['long_throws', 'marking'],
         ],
         'LWB' => [
-            'primary'   => ['crossing'],
-            'secondary' => ['passing', 'first_touch', 'dribbling'],
+            'primary'   => ['crossing', 'passing'],
+            'secondary' => ['first_touch', 'tackling'],
         ],
         'RB'  => [
-            'primary'   => ['crossing'],
-            'secondary' => ['tackling', 'passing'],
+            'primary'   => ['crossing', 'tackling'],
+            'secondary' => ['long_throws', 'marking'],
         ],
         'RWB' => [
-            'primary'   => ['crossing'],
-            'secondary' => ['passing', 'first_touch', 'dribbling'],
+            'primary'   => ['crossing', 'passing'],
+            'secondary' => ['first_touch', 'tackling'],
         ],
         'DMC' => [
-            'primary'   => ['tackling'],
-            'secondary' => ['passing'],
+            'primary'   => ['tackling', 'passing'],
+            'secondary' => ['marking', 'heading'],
         ],
         'CM'  => [
-            'primary'   => ['passing'],
-            'secondary' => ['first_touch'],
+            'primary'   => ['passing', 'first_touch'],
+            'secondary' => ['technique'],
         ],
         'AMC' => [
             'primary'   => ['passing', 'first_touch'],
             'secondary' => ['finishing', 'dribbling'],
         ],
         'LW'  => [
-            'primary'   => ['crossing', 'dribbling', 'first_touch'],
-            'secondary' => ['passing'],
+            'primary'   => ['crossing', 'dribbling'],
+            'secondary' => ['passing', 'first_touch'],
         ],
         'LF'  => [
-            'primary'   => ['finishing', 'dribbling', 'first_touch'],
-            'secondary' => ['passing'],
+            'primary'   => ['finishing', 'dribbling'],
+            'secondary' => ['passing', 'first_touch'],
         ],
         'RW'  => [
-            'primary'   => ['crossing', 'dribbling', 'first_touch'],
-            'secondary' => ['passing'],
+            'primary'   => ['crossing', 'dribbling'],
+            'secondary' => ['passing', 'first_touch'],
         ],
         'RF'  => [
-            'primary'   => ['finishing', 'dribbling', 'first_touch'],
-            'secondary' => ['passing'],
+            'primary'   => ['finishing', 'dribbling'],
+            'secondary' => ['passing', 'first_touch'],
         ],
         'CF'  => [
-            'primary'   => ['finishing', 'dribbling', 'first_touch'],
-            'secondary' => [],
+            'primary'   => ['finishing', 'first_touch'],
+            'secondary' => ['dribbling', 'technique'],
         ],
         'ST'  => [
-            'primary'   => ['finishing', 'dribbling', 'first_touch'],
-            'secondary' => ['heading'],
+            'primary'   => ['finishing',  'first_touch'],
+            'secondary' => ['heading', 'dribbling'],
         ],
     ];
 
     const POSITION_MENTAL_ATTRIBUTES = [
         'CB'  => [
             'primary'   => ['positioning', 'determination'],
-            'secondary' => ['concentration'],
+            'secondary' => ['concentration', 'bravery'],
         ],
         'LB'  => [
             'primary'   => ['positioning', 'workrate'],
-            'secondary' => ['long_throws'],
+            'secondary' => ['decisions', 'concentration'],
         ],
         'LWB' => [
-            'primary'   => ['positioning', 'workrate'],
-            'secondary' => ['of_the_ball'],
+            'primary'   => ['positioning', 'of_the_ball'],
+            'secondary' => ['workrate'],
         ],
         'RB'  => [
             'primary'   => ['positioning', 'workrate'],
-            'secondary' => ['of_the_ball'],
+            'secondary' => ['decisions', 'concentration'],
         ],
         'RWB' => [
-            'primary'   => ['positioning', 'workrate'],
-            'secondary' => ['of_the_ball'],
+            'primary'   => ['positioning', 'of_the_ball'],
+            'secondary' => ['workrate'],
         ],
         'DMC' => [
             'primary'   => ['positioning', 'workrate', 'determination'],
-            'secondary' => ['teamwork'],
+            'secondary' => ['teamwork', 'leadership'],
         ],
         'CM'  => [
-            'primary'   => ['positioning', 'of_the_ball'],
-            'secondary' => ['teamwork', 'creativity'],
+            'primary'   => ['creativity', 'of_the_ball'],
+            'secondary' => ['teamwork', 'teamwork'],
         ],
         'AMC' => [
             'primary'   => ['creativity', 'flair'],
@@ -102,7 +104,7 @@ class PlayerPositionConfig
         ],
         'LW'  => [
             'primary'   => ['of_the_ball'],
-            'secondary' => [],
+            'secondary' => ['anticipation'],
         ],
         'LF'  => [
             'primary'   => ['of_the_ball', 'flair'],
@@ -110,7 +112,7 @@ class PlayerPositionConfig
         ],
         'RW'  => [
             'primary'   => ['of_the_ball'],
-            'secondary' => [],
+            'secondary' => ['anticipation'],
         ],
         'RF'  => [
             'primary'   => ['of_the_ball', 'flair'],
@@ -122,7 +124,7 @@ class PlayerPositionConfig
         ],
         'ST'  => [
             'primary'   => ['composure', 'anticipation'],
-            'secondary' => ['flair', 'concentration'],
+            'secondary' => ['concentration'],
         ],
     ];
 
@@ -132,7 +134,7 @@ class PlayerPositionConfig
             'secondary' => ['jumping'],
         ],
         'LB'  => [
-            'primary'   => ['strength', 'acceleration'],
+            'primary'   => ['pace', 'acceleration'],
             'secondary' => ['stamina'],
         ],
         'LWB' => [
@@ -140,7 +142,7 @@ class PlayerPositionConfig
             'secondary' => ['stamina'],
         ],
         'RB'  => [
-            'primary'   => ['strength', 'acceleration'],
+            'primary'   => ['pace', 'acceleration'],
             'secondary' => ['stamina'],
         ],
         'RWB' => [
@@ -156,8 +158,8 @@ class PlayerPositionConfig
             'secondary' => ['natural_fitness'],
         ],
         'AMC' => [
-            'primary'   => ['pace', 'agility'],
-            'secondary' => [],
+            'primary'   => ['agility'],
+            'secondary' => ['balance'],
         ],
         'LW'  => [
             'primary'   => ['pace', 'acceleration'],
@@ -184,25 +186,6 @@ class PlayerPositionConfig
             'secondary' => ['jumping'],
         ],
     ];
-
-    const PLAYER_POSITIONS = ['CB', 'LB', 'LWB', 'RB', 'RWB', 'DMC', 'CM', 'AMC', 'LW', 'LF', 'RW', 'RF', 'CF', 'ST'];
-
-    /*const PLAYER_POSITIONS = [
-        'CB'  => 'Center back',
-        'LB'  => 'Left back',
-        'LWB' => 'Left wing back',
-        'RB'  => 'Right back',
-        'RWB' => 'Right wing back',
-        'DMC' => 'Defensive midfield center',
-        'CM'  => 'Center midfielder',
-        'LW'  => 'Left wing',
-        'LF'  => 'Left forward',
-        'AMC' => 'Attacking midfield center',
-        'RW'  => 'Right wing',
-        'RF'  => 'Right forward',
-        'CF'  => 'Center forward',
-        'ST'  => 'Striker',
-    ];*/
 
     public static function getRandomPosition()
     {
