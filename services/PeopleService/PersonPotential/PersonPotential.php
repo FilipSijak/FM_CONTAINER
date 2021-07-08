@@ -17,26 +17,26 @@ class PersonPotential
     }
 
     /**
-     * Creates random value for technical, mental and physical potential based on the provided rank
+     * Creates random value for technical, mental and physical potential based on the provided potential
      *
-     * @param int $rank
+     * @param int $potential
      *
      * @return \stdClass
      */
-    public function calculatePersonPotential(int $rank)
+    public function calculatePersonPotential(int $potential)
     {
         $personPotential            = new \stdClass();
         $potentialValue             = 0;
         $offset = count($this->categories);
 
         for ($i = 0; $i < $offset; $i++) {
-            if (in_array($rank, self::POTENTIAL_BOUNDARIES)) {
-                $personPotential->{$this->categories[$i]} = $rank;
+            if (in_array($potential, self::POTENTIAL_BOUNDARIES)) {
+                $personPotential->{$this->categories[$i]} = $potential;
                 continue;
             }
 
             for ($k = 1; $k < count(self::POTENTIAL_BOUNDARIES); $k++) {
-                if ($rank < self::POTENTIAL_BOUNDARIES[$k] && $rank > self::POTENTIAL_BOUNDARIES[$k - 1]) {
+                if ($potential < self::POTENTIAL_BOUNDARIES[$k] && $potential > self::POTENTIAL_BOUNDARIES[$k - 1]) {
                     $potentialValue = rand(self::POTENTIAL_BOUNDARIES[$k - 1], self::POTENTIAL_BOUNDARIES[$k]);
                 }
             }

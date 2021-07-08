@@ -42,13 +42,4 @@ class Player extends Model
     {
         return $this->attributesCategories["potentialByCategory"];
     }
-
-    public function getFullPotential()
-    {
-        $categories = $this->attributesCategories["potentialByCategory"];
-
-        return ceil(
-            ($categories["technical"] + $categories["physical"] + $categories["mental"]) / 3
-        );
-    }
 }

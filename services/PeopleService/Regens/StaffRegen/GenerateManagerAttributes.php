@@ -29,7 +29,7 @@ class GenerateManagerAttributes extends PersonAttributesGenerator
     protected function setCategoriesPotential()
     {
         $this->personPotential->setPersonCategories(StaffAttributes::STAFF_CATEGORIES);
-        $this->person->potentialByCategory = (array)$this->personPotential->calculatePersonPotential($this->rank);
+        $this->person->potentialByCategory = (array)$this->personPotential->calculatePersonPotential($this->personConfig->potential);
     }
 
     protected function setInitialAttributes()

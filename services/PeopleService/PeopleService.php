@@ -8,6 +8,7 @@ use Services\PeopleService\PersonValuation\PlayerValuation;
 use Services\PeopleService\PlayerPosition\PlayerPosition;
 use Services\PeopleService\Regens\PlayerRegen\GeneratePlayerAttributes;
 use Services\PeopleService\Regens\StaffRegen\GenerateManagerAttributes;
+use Services\PeopleService\Repositories\PlayerRepository;
 
 class PeopleService implements PeopleServiceInterface
 {
@@ -21,12 +22,9 @@ class PeopleService implements PeopleServiceInterface
      */
 
     private $personType;
-    /**
-     * @var int
-     */
-    private $personPotential;
 
     private $person = null;
+    private $personConfig;
 
     /**
      * @param int $personPotential
@@ -35,11 +33,11 @@ class PeopleService implements PeopleServiceInterface
      *
      * @return $this
      */
-    public function setPersonConfiguration(int $personPotential, int $gameId, int $personType): PeopleService
+    public function setPersonConfiguration(\stdClass $personConfig, int $gameId, string $personType): PeopleService
     {
-        $this->personPotential = $personPotential;
-        $this->gameId          = $gameId;
-        $this->personType      = $personType;
+        $this->personConfig = $personConfig;
+        $this->gameId       = $gameId;
+        $this->personType   = $personType;
 
         return $this;
     }
@@ -56,14 +54,14 @@ class PeopleService implements PeopleServiceInterface
 
         switch ($this->personType) {
             case PersonTypes::PLAYER:
-                $player              = new GeneratePlayerAttributes($this->personPotential, PersonTypes::PLAYER);
+                $player = new GeneratePlayerAttributes($this->personConfig, PersonTypes::PLAYER);
                 $generatedAttributes = $player->generateAttributes();
                 $this->person        = $personFactory->setAttributes($generatedAttributes)->createPlayer();
 
                 $playerValuation = new PlayerValuation();
 
                 $playerValuation->setPersonValue(
-                    $this->person->getFullPotential(),
+                    $this->personConfig->potential,
                     $clubRank,
                     $leagueRank,
                     $this->person->dob
@@ -73,7 +71,7 @@ class PeopleService implements PeopleServiceInterface
 
                 break;
             case PersonTypes::MANAGER:
-                $manager             = new GenerateManagerAttributes($this->personPotential, PersonTypes::MANAGER);
+                $manager             = new GenerateManagerAttributes($this->personConfig, PersonTypes::MANAGER);
                 $generatedAttributes = $manager->generateAttributes();
                 $this->person        = $personFactory->setAttributes($generatedAttributes)->createManager();
 
@@ -93,5 +91,17 @@ class PeopleService implements PeopleServiceInterface
         $playerPosition = new PlayerPosition();
 
         return $playerPosition->getInitialPositionsBasedOnAttributes($playerAttributes);
+    }
+
+    /**
+     * @param int $clubId
+     *
+     * @return array
+     */
+    public function playersByClubId(int $clubId)
+    {
+        $playerRepository = new PlayerRepository();
+
+        return $playerRepository->getPlayersByClubId($clubId);
     }
 }

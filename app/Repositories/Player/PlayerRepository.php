@@ -44,6 +44,8 @@ class PlayerRepository
                 " . $player->value . ",
                 '" . addslashes($player->first_name) . "',
                 '" . addslashes($player->last_name) . "',
+                '" . $player->potential . "',
+                '" . $player->position . "',
                 '" . $player->country_code . "',
                 '" . $player->dob . "',
                 " . $attributesCategories['technical'] . ",

@@ -125,9 +125,18 @@ class CreateGame implements CreateGameInterface
      */
     private function assignClubStaff(PeopleServiceInterface $peopleService): CreateGame
     {
+        $clubPeoplePotential = new InitialClubPeoplePotential();
+
         foreach ($this->clubs as $club) {
-            $manager = $peopleService->setPersonConfiguration($club->rank, $this->gameId, PersonTypes::MANAGER)
-                                     ->createPerson();
+            $staffMembers = $clubPeoplePotential->getStaffPotentialAndRole($club->rank);
+
+            foreach ($staffMembers as $member) {
+                if ($member->role == PersonTypes::MANAGER) {
+                    $manager = $peopleService->setPersonConfiguration($member, $this->gameId, PersonTypes::MANAGER)
+                                             ->createPerson();
+                }
+            }
+
 
             $manager->clubs()->attach($club->id);
         }
@@ -146,13 +155,13 @@ class CreateGame implements CreateGameInterface
         $playerRepository    = new PlayerRepository();
         $clubRepository      = new ClubRepository();
 
-        foreach ($this->clubs as $club) {
-            $playerPotentialList = $clubPeoplePotential->getPlayerPotentialListByClubRank($club->rank);
+        foreach ($this->clubs as $key => $club) {
+            $playerList = $clubPeoplePotential->getPlayerPotentialAndInitialPosition($club->rank);
             $generatedPlayers    = [];
             $league              = $clubRepository->getLeagueByClub($club->id, 1);
 
-            foreach ($playerPotentialList as $playerPotential) {
-                $player = $peopleService->setPersonConfiguration($playerPotential, $this->gameId, PersonTypes::PLAYER)
+            foreach ($playerList as $player) {
+                $player = $peopleService->setPersonConfiguration($player, $this->gameId, PersonTypes::PLAYER)
                                         ->createPerson($club->rank, $league["rank"]);
 
                 $generatedPlayers[] = $player;

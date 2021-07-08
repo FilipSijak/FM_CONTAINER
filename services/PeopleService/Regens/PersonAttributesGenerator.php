@@ -4,29 +4,29 @@ namespace Services\PeopleService\Regens;
 
 use Faker\Factory;
 use Services\PeopleService\PersonTypes;
+use stdClass;
 
 abstract class PersonAttributesGenerator
 {
     /**
-     * @var int
-     */
-    protected $rank;
-
-    /**
-     * @var \stdClass
+     * @var stdClass
      */
     protected $person;
 
     /**
+     * @var stdClass
+     */
+    protected $personConfig;
+    /**
      * @var int
      */
-    private $personType;
+    private   $personType;
 
-    public function __construct(int $rank, int $type)
+    public function __construct(stdClass $personConfig, string $type)
     {
-        $this->rank = $rank;
-        $this->person = new \stdClass();
-        $this->personType = $type;
+        $this->personConfig = $personConfig;
+        $this->person       = new stdClass();
+        $this->personType   = $type;
     }
 
     abstract public function generateAttributes();
@@ -37,23 +37,23 @@ abstract class PersonAttributesGenerator
 
     protected function setPersonInfo()
     {
-        $faker = Factory::create();
+        $faker     = Factory::create();
         $startDate = '';
-        $endDate = '';
+        $endDate   = '';
 
         switch ($this->personType) {
             case PersonTypes::PLAYER:
                 $startDate = '-40 years';
-                $endDate = '-16 years';
+                $endDate   = '-16 years';
                 break;
             case PersonTypes::MANAGER:
                 $startDate = '-70 years';
-                $endDate = '-35 years';
+                $endDate   = '-35 years';
                 break;
         }
 
-        $dob   = $faker->dateTimeBetween($startDate, $endDate, $timezone = null);
-        $dob   = date_format($dob, 'Y-m-d');
+        $dob = $faker->dateTimeBetween($startDate, $endDate, $timezone = null);
+        $dob = date_format($dob, 'Y-m-d');
 
         $this->person->first_name   = $faker->firstNameMale;
         $this->person->last_name    = $faker->lastName;
