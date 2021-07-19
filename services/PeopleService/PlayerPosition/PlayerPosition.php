@@ -11,7 +11,7 @@ use Services\PeopleService\PersonConfig\Player\PlayerPositionConfig;
  */
 class PlayerPosition
 {
-    public function getRandomPosition()
+    public function getRandomPosition(): string
     {
         return PlayerPositionConfig::getRandomPosition();
     }
@@ -63,7 +63,7 @@ class PlayerPosition
     private function getAverageGradeByPosition(array $positionsWithMainAttributes, array $playerAttributeValues): array
     {
         $averageGradeForPosition = [];
-        $positionsLimit = 3;
+        $positionsLimit          = 3;
 
         foreach ($positionsWithMainAttributes as $position => $positionAttributes) {
             if (!$positionsLimit) {
@@ -86,14 +86,6 @@ class PlayerPosition
                 }
             }
 
-            /*if (isset($positionAttributes['secondary'][0])) {
-                foreach ($positionAttributes['secondary'][0] as $attribute) {
-                    $count++;
-                    $averageGradeForPosition[$position] += $playerAttributeValues[$attribute];
-                }
-            }*/
-
-
             $averageGradeForPosition[$position] = $averageGradeForPosition[$position] / $count;
             $positionsLimit--;
         }
@@ -103,4 +95,3 @@ class PlayerPosition
         return array_reverse($averageGradeForPosition);
     }
 }
-
