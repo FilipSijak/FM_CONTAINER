@@ -13,6 +13,9 @@ use Services\PeopleService\PersonPotential\PersonPotential;
  */
 class InitialAttributes
 {
+    const PRIMARY_ATTRIBUTES   = 'primary_attributes';
+    const SECONDARY_ATTRIBUTES = 'secondary_attributes';
+    const OTHER_ATTRIBTUES     = 'other_attributes';
     protected $playerPosition;
     protected $playerAllAttributes = [];
     protected $commonAttributes    = ['stamina', 'acceleration', 'strength'];
@@ -26,14 +29,6 @@ class InitialAttributes
         $this->playerPotentialByCategory = $playerPotentialByCategory;
 
         $this->setAttributes();
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllAttributeValues(): array
-    {
-        return $this->playerAllAttributes;
     }
 
     protected function setAttributes()
@@ -56,13 +51,73 @@ class InitialAttributes
      */
     protected function setPrimaryAttributes(array $primaryAttributes, string $attributesCategory)
     {
+        $potentialByCategory = $this->playerPotentialByCategory[$attributesCategory];
+        $reducedPotential    = $this->potentialReduction($potentialByCategory, self::PRIMARY_ATTRIBUTES);
+
         foreach ($primaryAttributes as $attribute) {
             $this->playerAllAttributes[$attribute] = (int)round(
-                rand($this->playerPotentialByCategory[$attributesCategory] - 15,
-                     $this->playerPotentialByCategory[$attributesCategory]
-                ) / 10
+                rand(($potentialByCategory - $reducedPotential), $potentialByCategory) / 10
             );
         }
+    }
+
+    /**
+     * @param int    $playerPotential
+     * @param string $type
+     *
+     * @return int
+     */
+    private function potentialReduction(int $playerPotential, string $type): int
+    {
+        $potentialDescription = PersonPotential::playerPotentialLabel($playerPotential);
+
+        switch ($type) {
+            case self::PRIMARY_ATTRIBUTES:
+                $potentialReductionByLabel = [
+                    'amateur'      => 2,
+                    'low'          => 4,
+                    'professional' => 5,
+                    'normal'       => 6,
+                    'high'         => 7,
+                    'very_high'    => 10,
+                    'world_class'  => 15,
+                ];
+                break;
+            case self::SECONDARY_ATTRIBUTES:
+                $potentialReductionByLabel = [
+                    'amateur'      => 4,
+                    'low'          => 6,
+                    'professional' => 12,
+                    'normal'       => 18,
+                    'high'         => 25,
+                    'very_high'    => 30,
+                    'world_class'  => 40,
+                ];
+                break;
+            case self::OTHER_ATTRIBTUES:
+                $potentialReductionByLabel = [
+                    'amateur'      => 10,
+                    'low'          => 15,
+                    'professional' => 20,
+                    'normal'       => 30,
+                    'high'         => 40,
+                    'very_high'    => 50,
+                    'world_class'  => 60,
+                ];
+                break;
+            default:
+                $potentialReductionByLabel = [
+                    'amateur'      => 10,
+                    'low'          => 15,
+                    'professional' => 20,
+                    'normal'       => 25,
+                    'high'         => 30,
+                    'very_high'    => 40,
+                    'world_class'  => 45,
+                ];
+        }
+
+        return $potentialReductionByLabel[$potentialDescription];
     }
 
     /**
@@ -75,12 +130,12 @@ class InitialAttributes
      */
     protected function setSecondaryAttributes($attributes, $attributesCategory)
     {
+        $potentialByCategory = $this->playerPotentialByCategory[$attributesCategory];
+        $reducedPotential    = $this->potentialReduction($potentialByCategory, self::SECONDARY_ATTRIBUTES);
+
         foreach ($attributes as $attribute) {
             $this->playerAllAttributes[$attribute] = (int)round(
-                rand(
-                    $this->playerPotentialByCategory[$attributesCategory] - 40,
-                    $this->playerPotentialByCategory[$attributesCategory]
-                ) / 10
+                rand(($potentialByCategory - $reducedPotential), $potentialByCategory) / 10
             );
         }
     }
@@ -103,6 +158,7 @@ class InitialAttributes
                 // checks the object if the attribute was already set for primary or secondary value
                 if (!isset($this->playerAllAttributes[$field])) {
                     $potentialForCategory  = $this->playerPotentialByCategory[$category];
+                    $reducedPotential      = $this->potentialReduction($potentialForCategory, self::OTHER_ATTRIBTUES);
                     $minimumAttributeValue = $this->setMinimumAttributeValue($potentialForCategory);
 
                     if (isset($this->commonAttributes[$field])) {
@@ -111,9 +167,13 @@ class InitialAttributes
 
                     /*
                      * After getting a minimal value for an attribute, the value is used as a starting point for rand
-                     * Example: Player with min value of 5 can end up with anything between 5 and $potentialForCategory
+                     * His potential will be reduced so non important attributes don't get too high
+                     * Example: potential = 150  rand (7, (150 - 50) / 10) or rand between 7 and 10
+                     * Players with lower potential will get their potential reduced less
                      */
-                    $this->playerAllAttributes[$field] = (int)round(rand($minimumAttributeValue, $potentialForCategory / 10));
+                    $this->playerAllAttributes[$field] = (int)round(
+                        rand($minimumAttributeValue, ($potentialForCategory - $reducedPotential) / 10)
+                    );
                 }
             }
         }
@@ -139,5 +199,13 @@ class InitialAttributes
         ];
 
         return $potentialMinimumAttributesRanges[$potentialDescription];
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllAttributeValues(): array
+    {
+        return $this->playerAllAttributes;
     }
 }
