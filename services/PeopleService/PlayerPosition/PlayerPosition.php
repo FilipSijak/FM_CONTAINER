@@ -63,13 +63,8 @@ class PlayerPosition
     private function getAverageGradeByPosition(array $positionsWithMainAttributes, array $playerAttributeValues): array
     {
         $averageGradeForPosition = [];
-        $positionsLimit          = 3;
 
         foreach ($positionsWithMainAttributes as $position => $positionAttributes) {
-            if (!$positionsLimit) {
-                break;
-            }
-
             $averageGradeForPosition[$position] = 0;
             $count                              = 0;
 
@@ -80,18 +75,30 @@ class PlayerPosition
                     if (!isset($playerAttributeValues[$attribute])) {
                         echo $attribute;
                     } else {
-                        $averageGradeForPosition[$position] += $playerAttributeValues[$attribute] + 3;
+                        $averageGradeForPosition[$position] += $playerAttributeValues[$attribute] + 8;
+                    }
+
+                }
+            }
+
+            if (isset($positionAttributes['secondary'][0])) {
+                foreach ($positionAttributes['secondary'][0] as $attribute) {
+                    $count++;
+
+                    if (!isset($playerAttributeValues[$attribute])) {
+                        echo $attribute;
+                    } else {
+                        $averageGradeForPosition[$position] += $playerAttributeValues[$attribute] + 5;
                     }
 
                 }
             }
 
             $averageGradeForPosition[$position] = $averageGradeForPosition[$position] / $count;
-            $positionsLimit--;
         }
 
-        asort($averageGradeForPosition);
+        arsort($averageGradeForPosition);
 
-        return array_reverse($averageGradeForPosition);
+        return array_slice($averageGradeForPosition, 0,3);
     }
 }
